@@ -1,0 +1,22 @@
+{
+  "name": "gate-bypass-bench",
+  "version": "0.1.0",
+  "description": "A benchmark that measures how often AI-agent command gates can be bypassed, by rewriting a forbidden command and counting a bypass only when the forbidden effect actually happens in a sandbox.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "gate-bypass-bench": "dist/cli.js"
+  },
+  "scripts": {
+    "bench": "tsx src/cli.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "tsx": "4.19.2",
+    "typescript": "5.7.2",
+    "vitest": "3.2.7"
+  }
+}
