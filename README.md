@@ -12,10 +12,14 @@ gate-bypass-bench turns that finding into something you can run against your own
 
 ## What it actually does
 
-For every pair of a **forbidden intent** and a **bypass rewrite**, it:
+For every **forbidden intent**, it runs two kinds of attack: **re-spellings** of the blocked
+command (chaining, quoting, line splits, `$IFS`, `awk`, `base64`, `eval`, absolute path, and
+more), and **equivalents** — whole commands that reach the same effect with a *different*
+binary (`unlink` and `find -delete` for `rm`; `head`, `sed`, `grep` for `cat`). For each one it:
 
-1. runs the rewritten command in a throwaway sandbox and checks whether the **forbidden
-   effect really happened** (the protected file is gone, the secret's canary was printed), and
+1. runs the command in a throwaway sandbox and checks whether the **forbidden effect really
+   happened** (the protected file is gone, the secret's canary was printed, the file became
+   world-writable), and
 2. asks each **gate** to allow or deny that same command string.
 
 A **bypass is counted only when both are true**: the gate allowed it, and running it caused
@@ -27,22 +31,30 @@ denominator is rewrites that genuinely still do the damage.
 $ npm run bench
 
 gate                bypass rate   (bypasses / effective)
-substring-denylist          33%   (6/18)
-word-denylist               67%   (12/18)
-allowlist                    0%   (0/18)
+substring-denylist          31%   (14/45)
+word-denylist               78%   (35/45)
+tokenized-denylist          71%   (32/45)
+allowlist                    0%   (0/45)
 ```
 
-(Numbers are from a POSIX `sh`/dash sandbox. The denylists leak; the allowlist doesn't.
-Note the word-boundary denylist scores *worse* than the crude substring one, because
-matching whole words misses `rm${IFS}file` and `__c=rm; "$__c" file` that a dumb substring
-search happens to catch. "More precise denylist" is not "safer denylist".)
+(POSIX `sh`/dash sandbox, three intents.) Two findings worth the whole repo:
+
+- **A more precise denylist is not a safer one.** The word-boundary denylist scores *worse*
+  than the crude substring one, because whole-word matching misses `rm${IFS}file` and
+  `__c=rm; "$__c" file` that a dumb substring search happens to still catch.
+- **Canonicalization helps, and is still not enough.** `tokenized-denylist` strips quotes,
+  backslashes, and paths off the first word before matching (`/bin/rm`, `\rm`, `r''m` all
+  resolve to `rm` and get blocked), so it beats the word denylist. But it stays blind to an
+  *equivalent* binary (`unlink`) and to the real command hiding inside `eval`, `awk`, or
+  `base64 | sh`, where the blocked word isn't the first token at all. Only the allowlist,
+  which names what may run and refuses everything else, holds at 0%.
 
 ## The pieces
 
 ```
-src/intents.ts    forbidden effects, each with a setup and a ground-truth check
-src/mutators.ts   bypass rewrites: chaining, quoting, line splits, $IFS, awk, base64, xargs
-src/gates.ts      the gates under test (two denylists and one allowlist)
+src/intents.ts    forbidden effects + equivalents, each with a setup and a ground-truth check
+src/mutators.ts   re-spellings: chaining, quoting, line splits, $IFS, awk, base64, eval, paths
+src/gates.ts      the gates under test (three denylists and one allowlist)
 src/sandbox.ts    run one command in a temp dir, then decide if the effect happened
 src/bench.ts      the matrix, and the both-conditions bypass rule
 ```
@@ -95,8 +107,9 @@ expect(score('my-gate').bypasses).toBe(0);
 
 - The sandbox is a POSIX `sh`. Windows shells and PowerShell have their own bypass families
   and aren't modeled yet.
-- Two intents and nine rewrites is a starting corpus, not a complete one. The structure is
-  built to grow: add an `Intent` or a `Mutator` and it joins the matrix.
+- Three intents, thirteen re-spellings, and a handful of equivalents is a starting corpus,
+  not a complete one. The structure is built to grow: add an `Intent` (with its
+  `equivalents`) or a `Mutator` and it joins the matrix.
 - A gate here sees only the command string. A real system can see more (arguments parsed,
   the working directory, prior actions), and a good gate should use it.
 

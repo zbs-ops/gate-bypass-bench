@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { makeGates } from '../src/gates.js';
+import { makeGates, resolveFirstBinary } from '../src/gates.js';
 
 const gate = (id: string) => {
   const g = makeGates().find((x) => x.id === id);
@@ -33,6 +33,31 @@ describe('allowlist', () => {
   it.each(["r''m x", 'rm${IFS}x', 'true; rm x', 'echo a | sh', 'awk "BEGIN{}"'])(
     'denies anything with shell features: %s',
     (cmd) => expect(g.decide(cmd)).toBe('DENY'),
+  );
+});
+
+describe('tokenized-denylist', () => {
+  const g = gate('tokenized-denylist');
+  it('denies the obvious command', () => expect(g.decide('rm protected.dat')).toBe('DENY'));
+  it.each(["r''m x", '\\rm x', '/bin/rm x'])(
+    'closes the re-spelling that fools the word denylist: %s',
+    (cmd) => expect(g.decide(cmd)).toBe('DENY'),
+  );
+  it.each([
+    ['an equivalent binary', 'unlink protected.dat'],
+    ['interpreter hand-off', 'awk \'BEGIN{system("rm x")}\''],
+    ['a harmless-looking first word', 'true; rm x'],
+  ])('still leaks on %s', (_label, cmd) => expect(g.decide(cmd)).toBe('ALLOW'));
+});
+
+describe('resolveFirstBinary', () => {
+  it.each([
+    ["r''m", 'rm'],
+    ['\\rm', 'rm'],
+    ['/bin/rm', 'rm'],
+    ['"cat"', 'cat'],
+  ])('canonicalizes %s to %s', (input, expected) =>
+    expect(resolveFirstBinary(input + ' x')).toBe(expected),
   );
 });
 

@@ -6,6 +6,12 @@ export interface Intent {
   binary: string;
   /** Arguments, each already safe to appear as its own shell word. */
   args: string[];
+  /**
+   * Whole commands that cause the same forbidden effect with a DIFFERENT binary (e.g.
+   * `unlink` for `rm`). These aren't re-spellings of `binary`; they're the "many commands,
+   * one goal" case that a denylist keyed on `binary` can't see at all.
+   */
+  equivalents?: string[];
   /** Create the files the forbidden command acts on, inside the sandbox dir. */
   setup: (dir: string) => void;
   /**

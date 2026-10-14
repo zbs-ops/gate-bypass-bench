@@ -9,9 +9,26 @@ const score = (gate: string) => {
 };
 
 describe('the benchmark as a whole', () => {
-  it('finds a real bypass in both denylist gates', () => {
+  it('finds a real bypass in every denylist gate, including the canonicalizing one', () => {
     expect(score('substring-denylist').bypasses).toBeGreaterThan(0);
     expect(score('word-denylist').bypasses).toBeGreaterThan(0);
+    expect(score('tokenized-denylist').bypasses).toBeGreaterThan(0);
+  });
+
+  it('shows canonicalization helps but is not enough: tokenized beats word, still leaks', () => {
+    // Stripping quotes/paths off the first word closes the cosmetic rewrites, so the
+    // tokenized gate should do better than the word denylist. But equivalent binaries and
+    // interpreter hand-off still get through, so it is nowhere near the allowlist's 0%.
+    expect(score('tokenized-denylist').bypassRate).toBeLessThan(score('word-denylist').bypassRate);
+    expect(score('tokenized-denylist').bypassRate).toBeGreaterThan(0.2);
+  });
+
+  it('the equivalent-binary attacks defeat every denylist', () => {
+    // unlink/find/head/sed never mention a blocked binary, so no denylist sees them.
+    const equivalentBypasses = runBench().cells.filter(
+      (c) => c.mutator.startsWith('equivalent:') && c.gate.endsWith('denylist') && c.bypass,
+    );
+    expect(equivalentBypasses.length).toBeGreaterThan(0);
   });
 
   it('cannot bypass the allowlist (it fails closed)', () => {
