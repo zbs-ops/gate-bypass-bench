@@ -61,5 +61,25 @@ export function makeMutators(): Mutator[] {
       describe: 'Feed the arguments to the binary through xargs',
       render: (b, a) => `printf '%s\\n' ${a.join(' ')} | xargs ${b}`,
     },
+    {
+      id: 'absolute-path',
+      describe: 'Call the binary by its full path so the bare name never appears',
+      render: (b, a) => `/bin/${join(b, a)}`,
+    },
+    {
+      id: 'backslash-escape',
+      describe: 'Backslash-escape the first letter (\\rm); the shell still runs the binary',
+      render: (b, a) => `\\${join(b, a)}`,
+    },
+    {
+      id: 'eval-string',
+      describe: 'Hand the command to the shell built-in eval',
+      render: (b, a) => `eval ${JSON.stringify(join(b, a))}`,
+    },
+    {
+      id: 'command-substitution',
+      describe: 'Build the binary name from the output of a substitution',
+      render: (b, a) => `$(printf %s ${b}) ${a.join(' ')}`,
+    },
   ];
 }

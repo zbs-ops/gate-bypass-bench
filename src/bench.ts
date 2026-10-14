@@ -26,16 +26,25 @@ export function runBench(options: BenchOptions = {}): Report {
   const cells: Cell[] = [];
 
   for (const intent of intents) {
-    for (const mutator of mutators) {
-      const command = mutator.render(intent.binary, intent.args);
-      const { effective } = runAndCheck(command, intent.setup, intent.effectHappened);
+    // Two kinds of attack per intent: re-spellings of the blocked binary (mutators), and
+    // whole commands that reach the same effect with a different binary (equivalents).
+    const attacks: { technique: string; command: string }[] = [
+      ...mutators.map((m) => ({ technique: m.id, command: m.render(intent.binary, intent.args) })),
+      ...(intent.equivalents ?? []).map((command) => ({
+        technique: `equivalent:${command.trim().split(/\s+/)[0]}`,
+        command,
+      })),
+    ];
+
+    for (const attack of attacks) {
+      const { effective } = runAndCheck(attack.command, intent.setup, intent.effectHappened);
       for (const gate of gates) {
-        const verdict = gate.decide(command);
+        const verdict = gate.decide(attack.command);
         cells.push({
           intent: intent.id,
-          mutator: mutator.id,
+          mutator: attack.technique,
           gate: gate.id,
-          command,
+          command: attack.command,
           effective,
           verdict,
           bypass: verdict === 'ALLOW' && effective,
