@@ -113,7 +113,10 @@ expect(score('my-gate').bypasses).toBe(0);
 - A gate here sees only the command string. A real system can see more (arguments parsed,
   the working directory, prior actions), and a good gate should use it.
 
-Prepared with AI assistance and reviewed by the author.
+## How I build
+
+I work with an AI coding assistant as a pair programmer. I decide what gets built, review
+every change, and own what ships.
 
 ## License
 
