@@ -1,5 +1,10 @@
 # gate-bypass-bench
 
+> **Problem:** agents get a list of commands they may not run, and research says most of those lists can be talked around.
+> **Approach:** rewrite forbidden commands in known bypass styles, run each in a sandbox, and count a bypass only when the forbidden effect really happened.
+> **Proof:** denylists bypassed 31–78% of the time, allowlist 0%. 45 tests.
+
+
 **How often can an AI agent's command gate be talked around?** This measures it.
 
 Give an agent a shell and you put a gate in front of it: a list of commands it may not run
