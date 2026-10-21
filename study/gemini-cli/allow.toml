@@ -1,0 +1,8 @@
+# The other way to use the same engine: name what may run, and let everything else fall
+# through to the default. Run non-interactively, that default is deny. Same four binaries
+# as the benchmark's built-in allowlist gate.
+[[rule]]
+toolName = "run_shell_command"
+commandPrefix = ["echo", "ls", "true", "pwd"]
+decision = "allow"
+priority = 100

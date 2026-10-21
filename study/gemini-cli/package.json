@@ -1,0 +1,15 @@
+{
+  "name": "gate-bypass-bench-gemini-cli-study",
+  "private": true,
+  "type": "module",
+  "description": "Runs Gemini CLI's real policy engine as a gate in gate-bypass-bench. Kept out of the main package because the engine pulls in ~370 MB of dependencies.",
+  "scripts": {
+    "study": "tsx run.ts"
+  },
+  "dependencies": {
+    "@google/gemini-cli-core": "0.65.0"
+  },
+  "devDependencies": {
+    "tsx": "4.19.2"
+  }
+}

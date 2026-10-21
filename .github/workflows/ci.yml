@@ -19,3 +19,19 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm run bench
+
+  # Re-runs the Gemini CLI study and fails if the committed RESULTS.md no longer matches.
+  gemini-cli-study:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm ci
+        working-directory: study/gemini-cli
+      - run: npx tsc -p study/gemini-cli
+      - run: npm run study
+        working-directory: study/gemini-cli
+      - run: git diff --exit-code study/gemini-cli/RESULTS.md
