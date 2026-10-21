@@ -36,6 +36,16 @@ export interface Gate {
   decide: (command: string) => 'ALLOW' | 'DENY';
 }
 
+/**
+ * A gate that may answer with a promise: a policy engine that parses the command first, a
+ * service call, a model acting as judge. Score it with `runBenchAsync`.
+ */
+export interface AsyncGate {
+  id: string;
+  describe: string;
+  decide: (command: string) => 'ALLOW' | 'DENY' | Promise<'ALLOW' | 'DENY'>;
+}
+
 export interface Cell {
   intent: string;
   mutator: string;

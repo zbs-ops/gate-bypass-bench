@@ -1,0 +1,8 @@
+# The deny rule a Gemini CLI user writes to keep YOLO mode from running these commands.
+# Same shape as the quickstart in Gemini CLI's policy-engine docs, with the benchmark's
+# six blocked binaries in place of "rm -rf".
+[[rule]]
+toolName = "run_shell_command"
+commandPrefix = ["rm", "cat", "dd", "curl", "wget", "chmod"]
+decision = "deny"
+priority = 100
