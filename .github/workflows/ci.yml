@@ -35,3 +35,36 @@ jobs:
       - run: npm run study
         working-directory: study/gemini-cli
       - run: git diff --exit-code study/gemini-cli/RESULTS.md
+
+  # Builds a small harness against Codex CLI's own Rust crates at a pinned release, regenerates
+  # its verdicts, and fails if they or RESULTS.md no longer match what's committed.
+  codex-cli-study:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: openai/codex
+          ref: rust-v0.163.0
+          path: .codex-src
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx tsx study/codex-cli/score.ts --export
+      - name: Build the harness inside the Codex workspace
+        run: |
+          cp -R study/codex-cli/harness .codex-src/codex-rs/gbb-harness
+          sed -i 's/^members = \[/members = [\n    "gbb-harness",/' .codex-src/codex-rs/Cargo.toml
+          cd .codex-src/codex-rs && cargo build -p gbb-harness
+      - name: Ask Codex's code for a verdict on every command
+        run: |
+          H=.codex-src/codex-rs/target/debug/gbb-harness
+          $H study/codex-cli/deny.rules never study/codex-cli/commands.json > study/codex-cli/verdicts-deny.json
+          $H study/codex-cli/allow.rules unless-trusted study/codex-cli/commands.json > study/codex-cli/verdicts-allow.json
+          cat study/codex-cli/verdicts-deny.json study/codex-cli/verdicts-allow.json
+      - run: npx tsx study/codex-cli/score.ts
+      - name: Fail if the committed study no longer matches
+        run: |
+          git status --porcelain study/codex-cli
+          test -z "$(git status --porcelain study/codex-cli)"

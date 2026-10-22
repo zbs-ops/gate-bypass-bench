@@ -1,0 +1,12 @@
+# Built inside a checkout of openai/codex (codex-rs/gbb-harness) so it compiles against the
+# exact crates and workspace patches of the tagged release. See study/codex-cli/README.md.
+[package]
+name = "gbb-harness"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+codex-execpolicy = { path = "../execpolicy" }
+codex-shell-command = { path = "../shell-command" }
+serde_json = { workspace = true }

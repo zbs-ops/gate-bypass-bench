@@ -1,0 +1,5 @@
+# The allowlist version: only these four may run without a person approving.
+prefix_rule(
+    pattern = [["echo", "ls", "true", "pwd"]],
+    decision = "allow",
+)

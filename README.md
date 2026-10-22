@@ -4,7 +4,7 @@
 >
 > **Approach:** rewrite forbidden commands in known bypass styles, run each in a sandbox, and count a bypass only when the forbidden effect really happened.
 >
-> **Proof:** denylists bypassed 31–84% of the time, including Gemini CLI's real deny rules (84%). Allowlists 0%, in the same engine too. 49 tests.
+> **Proof:** real deny rules in Gemini CLI and OpenAI's Codex CLI were bypassed 84% and 78% of the time. The same engines used as allowlists: 0%. 49 tests.
 
 
 **How often can an AI agent's command gate be talked around?** This measures it.
@@ -56,7 +56,9 @@ allowlist                    0%   (0/45)
   `base64 | sh`, where the blocked word isn't the first token at all. Only the allowlist,
   which names what may run and refuses everything else, holds at 0%.
 
-## A real gate: Gemini CLI's policy engine
+## Real gates: Gemini CLI and Codex CLI
+
+### Gemini CLI's policy engine
 
 The four gates above are ones I wrote. The fair question is whether a real product does
 better, so `study/gemini-cli/` runs **Gemini CLI's actual policy engine** (v0.65.0, from
@@ -88,6 +90,42 @@ matches goes to a human, so the deny-rule number is about YOLO mode, where the d
 the only check left. The docs describe `commandPrefix` as "starts with" matching, so this is
 the engine working as documented. The point is what a deny rule can and can't promise.
 
+### OpenAI Codex CLI's command rules
+
+`study/codex-cli/` asks **Codex CLI's own Rust code** (tag `rust-v0.163.0`) for a verdict on
+every attack. Codex has no JavaScript API for this, so a small harness
+([harness/src/main.rs](study/codex-cli/harness/src/main.rs)) is compiled inside a checkout of
+the Codex repo and calls the same functions Codex's core uses for a model's `bash -lc` call:
+split the script into plain commands, match each against the rules (with `/bin/rm` resolved to
+`rm`), and fall back to Codex's built-in dangerous-command check.
+
+- **deny rule:** approval policy `never`, plus a `prefix_rule` with `decision = "forbidden"`
+  for the six binaries.
+- **allow rule:** approval policy `unless-trusted`, with an allow `prefix_rule` for `echo`,
+  `ls`, `true`, `pwd`. Everything else waits for a person.
+
+```
+gate                   bypass rate   (bypasses / effective)
+codex-cli-deny-rule            78%   (35/45)
+codex-cli-allow-rule            0%   (0/45)
+```
+
+Codex catches one thing Gemini misses: `/bin/rm` is matched as `rm`. But it only splits
+scripts made of plain words; any other script is matched as a whole `bash -lc` call, which no
+rule names. And a prefix rule only sees the first word of each piece, so `\rm`, `r''m`,
+`rm${IFS}file`, `$(printf %s rm)`, a variable, `eval`, `xargs rm`, `awk`, `base64 | sh` and the
+equivalent binaries all get through.
+
+The verdicts are committed ([RESULTS.md](study/codex-cli/RESULTS.md)). CI checks out Codex at
+that tag, builds the harness, regenerates every verdict and fails if anything changed.
+
+What this does and doesn't show: it's the rules check, not a full Codex session. With approval
+`never`, a command no rule forbids runs without asking, sandboxed or not, so the 78% is the
+deny rule's own record. Codex's sandbox is its main defense, and these attacks only touch files
+inside the working directory, which a workspace-write sandbox lets commands change by design.
+
+**Two products, two parsers, the same result: deny rules leak, allowlists hold.**
+
 ## The pieces
 
 ```
@@ -97,10 +135,12 @@ src/gates.ts      the gates under test (three denylists and one allowlist)
 src/sandbox.ts    run one command in a temp dir, then decide if the effect happened
 src/bench.ts      the matrix, and the both-conditions bypass rule
 study/gemini-cli  Gemini CLI's real policy engine as a gate (separate install, ~370 MB)
+study/codex-cli   Codex CLI's rules check, via a Rust harness built in CI
 ```
 
 The package is plain TypeScript with no runtime dependencies. Tests: `npm test`. The Gemini
-study: `cd study/gemini-cli && npm install && npm run study`.
+study: `cd study/gemini-cli && npm install && npm run study`. The Codex study scores committed
+verdicts with `npx tsx study/codex-cli/score.ts`; the CI job shows how to rebuild them.
 
 ## Test your own gate
 
@@ -149,6 +189,7 @@ expect(score('my-gate').bypasses).toBe(0);
 
 - Chen & Lin, *One Goal, Many Commands: Characterizing Denylist Fragility in AI Agents*,
   [arXiv:2606.15549](https://arxiv.org/abs/2606.15549)
+- Codex CLI execpolicy: `codex-rs/execpolicy` and `codex-rs/core/src/exec_policy.rs` in openai/codex
 - Gemini CLI policy engine docs: `docs/reference/policy-engine.md` in google-gemini/gemini-cli
 - Saltzer & Schroeder (1975) on fail-safe defaults: base access on permission, not exclusion
 - OWASP Top 10 for LLM Applications (2025), LLM06 *Excessive Agency*
