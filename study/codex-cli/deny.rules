@@ -1,0 +1,5 @@
+# A user's ~/.codex/rules file forbidding the benchmark's six blocked binaries.
+prefix_rule(
+    pattern = [["rm", "cat", "dd", "curl", "wget", "chmod"]],
+    decision = "forbidden",
+)
