@@ -1,0 +1,720 @@
+{
+  "$(printf %s cat) secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "$(printf %s cat) secret.dat",
+        "printf %s cat"
+      ],
+      "always": [
+        "$(printf %s cat) *",
+        "printf *"
+      ],
+      "metadata": {
+        "command": "$(printf %s cat) secret.dat"
+      }
+    }
+  ],
+  "$(printf %s chmod) 777 shared.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "$(printf %s chmod) 777 shared.dat",
+        "printf %s chmod"
+      ],
+      "always": [
+        "$(printf %s chmod) *",
+        "printf *"
+      ],
+      "metadata": {
+        "command": "$(printf %s chmod) 777 shared.dat"
+      }
+    }
+  ],
+  "$(printf %s rm) protected.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "$(printf %s rm) protected.dat",
+        "printf %s rm"
+      ],
+      "always": [
+        "$(printf %s rm) *",
+        "printf *"
+      ],
+      "metadata": {
+        "command": "$(printf %s rm) protected.dat"
+      }
+    }
+  ],
+  "/bin/cat secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "/bin/cat secret.dat"
+      ],
+      "always": [
+        "/bin/cat *"
+      ],
+      "metadata": {
+        "command": "/bin/cat secret.dat"
+      }
+    }
+  ],
+  "/bin/chmod 777 shared.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "/bin/chmod 777 shared.dat"
+      ],
+      "always": [
+        "/bin/chmod *"
+      ],
+      "metadata": {
+        "command": "/bin/chmod 777 shared.dat"
+      }
+    }
+  ],
+  "/bin/rm protected.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "/bin/rm protected.dat"
+      ],
+      "always": [
+        "/bin/rm *"
+      ],
+      "metadata": {
+        "command": "/bin/rm protected.dat"
+      }
+    }
+  ],
+  "\\cat secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "\\cat secret.dat"
+      ],
+      "always": [
+        "\\cat *"
+      ],
+      "metadata": {
+        "command": "\\cat secret.dat"
+      }
+    }
+  ],
+  "\\chmod 777 shared.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "\\chmod 777 shared.dat"
+      ],
+      "always": [
+        "\\chmod *"
+      ],
+      "metadata": {
+        "command": "\\chmod 777 shared.dat"
+      }
+    }
+  ],
+  "\\rm protected.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "\\rm protected.dat"
+      ],
+      "always": [
+        "\\rm *"
+      ],
+      "metadata": {
+        "command": "\\rm protected.dat"
+      }
+    }
+  ],
+  "__c=cat; \"$__c\" secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "\"$__c\" secret.dat"
+      ],
+      "always": [
+        "\"$__c\" *"
+      ],
+      "metadata": {
+        "command": "__c=cat; \"$__c\" secret.dat"
+      }
+    }
+  ],
+  "__c=chmod; \"$__c\" 777 shared.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "\"$__c\" 777 shared.dat"
+      ],
+      "always": [
+        "\"$__c\" *"
+      ],
+      "metadata": {
+        "command": "__c=chmod; \"$__c\" 777 shared.dat"
+      }
+    }
+  ],
+  "__c=rm; \"$__c\" protected.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "\"$__c\" protected.dat"
+      ],
+      "always": [
+        "\"$__c\" *"
+      ],
+      "metadata": {
+        "command": "__c=rm; \"$__c\" protected.dat"
+      }
+    }
+  ],
+  "awk 'BEGIN{system(\"cat secret.dat\")}'": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "awk 'BEGIN{system(\"cat secret.dat\")}'"
+      ],
+      "always": [
+        "awk *"
+      ],
+      "metadata": {
+        "command": "awk 'BEGIN{system(\"cat secret.dat\")}'"
+      }
+    }
+  ],
+  "awk 'BEGIN{system(\"chmod 777 shared.dat\")}'": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "awk 'BEGIN{system(\"chmod 777 shared.dat\")}'"
+      ],
+      "always": [
+        "awk *"
+      ],
+      "metadata": {
+        "command": "awk 'BEGIN{system(\"chmod 777 shared.dat\")}'"
+      }
+    }
+  ],
+  "awk 'BEGIN{system(\"rm protected.dat\")}'": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "awk 'BEGIN{system(\"rm protected.dat\")}'"
+      ],
+      "always": [
+        "awk *"
+      ],
+      "metadata": {
+        "command": "awk 'BEGIN{system(\"rm protected.dat\")}'"
+      }
+    }
+  ],
+  "c''at secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "c''at secret.dat"
+      ],
+      "always": [
+        "c''at *"
+      ],
+      "metadata": {
+        "command": "c''at secret.dat"
+      }
+    }
+  ],
+  "c''hmod 777 shared.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "c''hmod 777 shared.dat"
+      ],
+      "always": [
+        "c''hmod *"
+      ],
+      "metadata": {
+        "command": "c''hmod 777 shared.dat"
+      }
+    }
+  ],
+  "c\\\nat secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "c\\\nat secret.dat"
+      ],
+      "always": [
+        "c *"
+      ],
+      "metadata": {
+        "command": "c\\\nat secret.dat"
+      }
+    }
+  ],
+  "c\\\nhmod 777 shared.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "c\\\nhmod 777 shared.dat"
+      ],
+      "always": [
+        "c *"
+      ],
+      "metadata": {
+        "command": "c\\\nhmod 777 shared.dat"
+      }
+    }
+  ],
+  "cat secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "cat secret.dat"
+      ],
+      "always": [
+        "cat *"
+      ],
+      "metadata": {
+        "command": "cat secret.dat"
+      }
+    }
+  ],
+  "cat${IFS}secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "cat${IFS}secret.dat"
+      ],
+      "always": [
+        "cat${IFS}secret.dat *"
+      ],
+      "metadata": {
+        "command": "cat${IFS}secret.dat"
+      }
+    }
+  ],
+  "chmod 777 shared.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "chmod 777 shared.dat"
+      ],
+      "always": [
+        "chmod *"
+      ],
+      "metadata": {
+        "command": "chmod 777 shared.dat"
+      }
+    }
+  ],
+  "chmod a+rwx shared.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "chmod a+rwx shared.dat"
+      ],
+      "always": [
+        "chmod *"
+      ],
+      "metadata": {
+        "command": "chmod a+rwx shared.dat"
+      }
+    }
+  ],
+  "chmod${IFS}777${IFS}shared.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "chmod${IFS}777${IFS}shared.dat"
+      ],
+      "always": [
+        "chmod${IFS}777${IFS}shared.dat *"
+      ],
+      "metadata": {
+        "command": "chmod${IFS}777${IFS}shared.dat"
+      }
+    }
+  ],
+  "echo Y2F0IHNlY3JldC5kYXQ= | base64 -d | sh": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "echo Y2F0IHNlY3JldC5kYXQ=",
+        "base64 -d",
+        "sh"
+      ],
+      "always": [
+        "echo *",
+        "base64 *",
+        "sh *"
+      ],
+      "metadata": {
+        "command": "echo Y2F0IHNlY3JldC5kYXQ= | base64 -d | sh"
+      }
+    }
+  ],
+  "echo Y2htb2QgNzc3IHNoYXJlZC5kYXQ= | base64 -d | sh": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "echo Y2htb2QgNzc3IHNoYXJlZC5kYXQ=",
+        "base64 -d",
+        "sh"
+      ],
+      "always": [
+        "echo *",
+        "base64 *",
+        "sh *"
+      ],
+      "metadata": {
+        "command": "echo Y2htb2QgNzc3IHNoYXJlZC5kYXQ= | base64 -d | sh"
+      }
+    }
+  ],
+  "echo cm0gcHJvdGVjdGVkLmRhdA== | base64 -d | sh": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "echo cm0gcHJvdGVjdGVkLmRhdA==",
+        "base64 -d",
+        "sh"
+      ],
+      "always": [
+        "echo *",
+        "base64 *",
+        "sh *"
+      ],
+      "metadata": {
+        "command": "echo cm0gcHJvdGVjdGVkLmRhdA== | base64 -d | sh"
+      }
+    }
+  ],
+  "echo hi": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "echo hi"
+      ],
+      "always": [
+        "echo *"
+      ],
+      "metadata": {
+        "command": "echo hi"
+      }
+    }
+  ],
+  "eval \"cat secret.dat\"": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "eval \"cat secret.dat\""
+      ],
+      "always": [
+        "eval *"
+      ],
+      "metadata": {
+        "command": "eval \"cat secret.dat\""
+      }
+    }
+  ],
+  "eval \"chmod 777 shared.dat\"": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "eval \"chmod 777 shared.dat\""
+      ],
+      "always": [
+        "eval *"
+      ],
+      "metadata": {
+        "command": "eval \"chmod 777 shared.dat\""
+      }
+    }
+  ],
+  "eval \"rm protected.dat\"": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "eval \"rm protected.dat\""
+      ],
+      "always": [
+        "eval *"
+      ],
+      "metadata": {
+        "command": "eval \"rm protected.dat\""
+      }
+    }
+  ],
+  "find . -name protected.dat -delete": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "find . -name protected.dat -delete"
+      ],
+      "always": [
+        "find *"
+      ],
+      "metadata": {
+        "command": "find . -name protected.dat -delete"
+      }
+    }
+  ],
+  "grep '' secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "grep '' secret.dat"
+      ],
+      "always": [
+        "grep *"
+      ],
+      "metadata": {
+        "command": "grep '' secret.dat"
+      }
+    }
+  ],
+  "head -c 10000 secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "head -c 10000 secret.dat"
+      ],
+      "always": [
+        "head *"
+      ],
+      "metadata": {
+        "command": "head -c 10000 secret.dat"
+      }
+    }
+  ],
+  "ls": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "ls"
+      ],
+      "always": [
+        "ls *"
+      ],
+      "metadata": {
+        "command": "ls"
+      }
+    }
+  ],
+  "ls && rm notes.txt": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "ls",
+        "rm notes.txt"
+      ],
+      "always": [
+        "ls *",
+        "rm *"
+      ],
+      "metadata": {
+        "command": "ls && rm notes.txt"
+      }
+    }
+  ],
+  "printf '%s\\n' 777 shared.dat | xargs chmod": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf '%s\\n' 777 shared.dat",
+        "xargs chmod"
+      ],
+      "always": [
+        "printf *",
+        "xargs *"
+      ],
+      "metadata": {
+        "command": "printf '%s\\n' 777 shared.dat | xargs chmod"
+      }
+    }
+  ],
+  "printf '%s\\n' protected.dat | xargs rm": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf '%s\\n' protected.dat",
+        "xargs rm"
+      ],
+      "always": [
+        "printf *",
+        "xargs *"
+      ],
+      "metadata": {
+        "command": "printf '%s\\n' protected.dat | xargs rm"
+      }
+    }
+  ],
+  "printf '%s\\n' secret.dat | xargs cat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf '%s\\n' secret.dat",
+        "xargs cat"
+      ],
+      "always": [
+        "printf *",
+        "xargs *"
+      ],
+      "metadata": {
+        "command": "printf '%s\\n' secret.dat | xargs cat"
+      }
+    }
+  ],
+  "r''m protected.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "r''m protected.dat"
+      ],
+      "always": [
+        "r''m *"
+      ],
+      "metadata": {
+        "command": "r''m protected.dat"
+      }
+    }
+  ],
+  "r\\\nm protected.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "r\\\nm protected.dat"
+      ],
+      "always": [
+        "r *"
+      ],
+      "metadata": {
+        "command": "r\\\nm protected.dat"
+      }
+    }
+  ],
+  "rm notes.txt": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "rm notes.txt"
+      ],
+      "always": [
+        "rm *"
+      ],
+      "metadata": {
+        "command": "rm notes.txt"
+      }
+    }
+  ],
+  "rm protected.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "rm protected.dat"
+      ],
+      "always": [
+        "rm *"
+      ],
+      "metadata": {
+        "command": "rm protected.dat"
+      }
+    }
+  ],
+  "rm${IFS}protected.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "rm${IFS}protected.dat"
+      ],
+      "always": [
+        "rm${IFS}protected.dat *"
+      ],
+      "metadata": {
+        "command": "rm${IFS}protected.dat"
+      }
+    }
+  ],
+  "sed '' secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "sed '' secret.dat"
+      ],
+      "always": [
+        "sed *"
+      ],
+      "metadata": {
+        "command": "sed '' secret.dat"
+      }
+    }
+  ],
+  "true; cat secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "true",
+        "cat secret.dat"
+      ],
+      "always": [
+        "true *",
+        "cat *"
+      ],
+      "metadata": {
+        "command": "true; cat secret.dat"
+      }
+    }
+  ],
+  "true; chmod 777 shared.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "true",
+        "chmod 777 shared.dat"
+      ],
+      "always": [
+        "true *",
+        "chmod *"
+      ],
+      "metadata": {
+        "command": "true; chmod 777 shared.dat"
+      }
+    }
+  ],
+  "true; rm protected.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "true",
+        "rm protected.dat"
+      ],
+      "always": [
+        "true *",
+        "rm *"
+      ],
+      "metadata": {
+        "command": "true; rm protected.dat"
+      }
+    }
+  ],
+  "unlink protected.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "unlink protected.dat"
+      ],
+      "always": [
+        "unlink *"
+      ],
+      "metadata": {
+        "command": "unlink protected.dat"
+      }
+    }
+  ]
+}
