@@ -96,7 +96,7 @@ jobs:
           cd .opencode-src/packages/opencode
           GBB_COMMANDS="$GITHUB_WORKSPACE/study/opencode/commands.json" GBB_OUT="$GITHUB_WORKSPACE/study/opencode" \
             bun test test/tool/gbb.test.ts --timeout 120000
-          cat "$GITHUB_WORKSPACE/study/opencode/verdicts-deny.json" "$GITHUB_WORKSPACE/study/opencode/verdicts-allow.json"
+          for f in patterns verdicts-deny verdicts-allow; do echo "=== $f"; cat "$GITHUB_WORKSPACE/study/opencode/$f.json"; done
       - run: npx tsx study/opencode/score.ts
       - name: Fail if the committed study no longer matches
         run: |
