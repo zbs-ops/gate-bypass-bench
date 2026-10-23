@@ -4,7 +4,7 @@
 >
 > **Approach:** rewrite forbidden commands in known bypass styles, run each in a sandbox, and count a bypass only when the forbidden effect really happened.
 >
-> **Proof:** real deny rules in Gemini CLI and OpenAI's Codex CLI were bypassed 84% and 78% of the time. The same engines used as allowlists: 0%. 49 tests.
+> **Proof:** real deny rules in Gemini CLI, OpenAI's Codex CLI and opencode were bypassed 84%, 78% and 84% of the time. The same engines used as allowlists: 0%. 49 tests.
 
 
 **How often can an AI agent's command gate be talked around?** This measures it.
@@ -56,7 +56,7 @@ allowlist                    0%   (0/45)
   `base64 | sh`, where the blocked word isn't the first token at all. Only the allowlist,
   which names what may run and refuses everything else, holds at 0%.
 
-## Real gates: Gemini CLI and Codex CLI
+## Real gates: Gemini CLI, Codex CLI and opencode
 
 ### Gemini CLI's policy engine
 
@@ -124,7 +124,37 @@ What this does and doesn't show: it's the rules check, not a full Codex session.
 deny rule's own record. Codex's sandbox is its main defense, and these attacks only touch files
 inside the working directory, which a workspace-write sandbox lets commands change by design.
 
-**Two products, two parsers, the same result: deny rules leak, allowlists hold.**
+### opencode's bash permissions
+
+[opencode](https://github.com/anomalyco/opencode) lets users write `permission.bash` rules as
+wildcards, matched against every command it parses out of a script, last match wins
+(`"rm *": "deny"`). `study/opencode/` runs **opencode's own code** at tag `v1.19.4`: a test file
+([harness/gbb.test.ts](study/opencode/harness/gbb.test.ts)) dropped into a checkout of the repo
+reuses the setup of opencode's own shell-tool tests. For each attack it runs the real `ShellTool`,
+records the permission patterns it asks about, stops before anything executes, and scores them
+with opencode's `Permission.fromConfig` and `Permission.evaluate`.
+
+- **deny rule:** `"*": "allow"` followed by `"rm *": "deny"` and the rest of the six.
+- **allow rule:** `"*": "ask"` followed by `"echo *": "allow"` and the other three.
+
+```
+gate                 bypass rate   (bypasses / effective)
+opencode-deny-rule           84%   (38/45)
+opencode-allow-rule           0%   (0/45)
+```
+
+The parser is thorough: `true; rm file` becomes two patterns, and `$(printf %s rm) file` yields
+the inner `printf %s rm` too. The patterns it records are in
+[patterns.json](study/opencode/patterns.json). But a wildcard rule still matches text, so the
+pattern for `/bin/rm file` is `/bin/rm file`, the one for `xargs rm` starts with `xargs`, and
+`"$__c" file` names no command at all. The deny rule catches the same 7 attacks Gemini's does.
+CI regenerates every verdict from opencode's source and fails if any change.
+
+What this does and doesn't show: the permission check, not a full session with a model.
+`"*": "allow"` is the setup where a deny rule is the only check; with `"*": "ask"` an unmatched
+command goes to a person anyway.
+
+**Three products, three parsers, the same result: deny rules leak, allowlists hold.**
 
 ## The pieces
 
@@ -136,11 +166,13 @@ src/sandbox.ts    run one command in a temp dir, then decide if the effect happe
 src/bench.ts      the matrix, and the both-conditions bypass rule
 study/gemini-cli  Gemini CLI's real policy engine as a gate (separate install, ~370 MB)
 study/codex-cli   Codex CLI's rules check, via a Rust harness built in CI
+study/opencode    opencode's shell tool and permission rules, via a test run in CI
 ```
 
 The package is plain TypeScript with no runtime dependencies. Tests: `npm test`. The Gemini
 study: `cd study/gemini-cli && npm install && npm run study`. The Codex study scores committed
-verdicts with `npx tsx study/codex-cli/score.ts`; the CI job shows how to rebuild them.
+verdicts with `npx tsx study/codex-cli/score.ts`, and the opencode study with
+`npx tsx study/opencode/score.ts`; their CI jobs show how to rebuild the verdicts.
 
 ## Test your own gate
 
@@ -189,6 +221,7 @@ expect(score('my-gate').bypasses).toBe(0);
 
 - Chen & Lin, *One Goal, Many Commands: Characterizing Denylist Fragility in AI Agents*,
   [arXiv:2606.15549](https://arxiv.org/abs/2606.15549)
+- opencode permissions docs: `packages/web/src/content/docs/permissions.mdx` in anomalyco/opencode
 - Codex CLI execpolicy: `codex-rs/execpolicy` and `codex-rs/core/src/exec_policy.rs` in openai/codex
 - Gemini CLI policy engine docs: `docs/reference/policy-engine.md` in google-gemini/gemini-cli
 - Saltzer & Schroeder (1975) on fail-safe defaults: base access on permission, not exclusion
