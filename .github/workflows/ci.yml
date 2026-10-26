@@ -102,3 +102,50 @@ jobs:
         run: |
           git status --porcelain study/opencode
           test -z "$(git status --porcelain study/opencode)"
+
+  # What Gemini CLI and Codex do with a tool call when the safety hook crashes, times out, or
+  # answers in a way they don't support. Each agent's own code decides, at a pinned commit.
+  hook-failure-study:
+    runs-on: ubuntu-latest
+    env:
+      GEMINI_CLI_REF: cd1b45c2db0a5ea7b7fc3b67c1ba5879601d6005
+      CODEX_REF: 970111f6cb62cc02fe36a82ea7d71b37a2889c97
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: google-gemini/gemini-cli
+          ref: ${{ env.GEMINI_CLI_REF }}
+          path: .gemini-src
+      - uses: actions/checkout@v4
+        with:
+          repository: openai/codex
+          ref: ${{ env.CODEX_REF }}
+          path: .codex-src
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm ci --ignore-scripts
+        working-directory: .gemini-src
+      - name: Gemini CLI's hook runner on each behaviour
+        run: |
+          cp study/hook-failures/gemini.hook-failures.test.ts .gemini-src/packages/core/src/hooks/
+          cd .gemini-src/packages/core
+          HOOK_STUDY_CASES="$GITHUB_WORKSPACE/study/hook-failures/cases.json" HOOK_STUDY_OUT="$RUNNER_TEMP/gemini.json" \
+            npx vitest run src/hooks/gemini.hook-failures.test.ts --coverage.enabled=false --silent=false
+          cat "$RUNNER_TEMP/gemini.json"
+      - run: python3 study/hook-failures/inject.py .codex-src/codex-rs/hooks/src/events/pre_tool_use.rs
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: .codex-src/codex-rs
+      - name: Codex's PreToolUse parser on each behaviour
+        working-directory: .codex-src/codex-rs
+        run: |
+          HOOK_STUDY_OUT="$RUNNER_TEMP/codex.json" cargo test -p codex-hooks --lib hook_failure_study -- --nocapture
+          cat "$RUNNER_TEMP/codex.json"
+      - run: npx tsx study/hook-failures/render.ts "$RUNNER_TEMP/gemini.json" "$RUNNER_TEMP/codex.json"
+      - name: Fail if the committed study no longer matches
+        run: |
+          git status --porcelain study/hook-failures
+          test -z "$(git status --porcelain study/hook-failures)"
