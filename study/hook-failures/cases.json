@@ -1,0 +1,12 @@
+[
+  { "id": "deny", "describe": "a well-formed deny with a reason (the control)" },
+  { "id": "ask", "describe": "asks for the user's confirmation" },
+  { "id": "allow", "describe": "explicitly allows the call" },
+  { "id": "nothing", "describe": "prints nothing and exits 0 (no opinion)" },
+  { "id": "crash", "describe": "crashes: exits 1 and prints nothing" },
+  { "id": "exit2-reason", "describe": "exits 2 with a reason on stderr" },
+  { "id": "exit2-silent", "describe": "exits 2 with nothing on stderr" },
+  { "id": "bad-json", "describe": "prints JSON that doesn't parse" },
+  { "id": "deny-extra-field", "describe": "a deny that also sets a field the agent doesn't support for this event" },
+  { "id": "timeout", "describe": "hangs past its timeout" }
+]
