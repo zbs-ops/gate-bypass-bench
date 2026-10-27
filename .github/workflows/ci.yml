@@ -124,7 +124,7 @@ jobs:
           path: .codex-src
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - run: npm ci
       - run: npm ci --ignore-scripts
         working-directory: .gemini-src
