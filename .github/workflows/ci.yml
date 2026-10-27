@@ -103,8 +103,8 @@ jobs:
           git status --porcelain study/opencode
           test -z "$(git status --porcelain study/opencode)"
 
-  # What Gemini CLI and Codex do with a tool call when the safety hook crashes, times out, or
-  # answers in a way they don't support. Each agent's own code decides, at a pinned commit.
+  # What Gemini CLI, Codex and opencode do with a tool call when the safety hook crashes, times
+  # out, or answers in a way they don't support. Each agent's own code decides, at a pinned version.
   hook-failure-study:
     runs-on: ubuntu-latest
     env:
@@ -144,7 +144,23 @@ jobs:
         run: |
           HOOK_STUDY_OUT="$RUNNER_TEMP/codex.json" cargo test -p codex-hooks --lib hook_failure_study -- --nocapture
           cat "$RUNNER_TEMP/codex.json"
-      - run: npx tsx study/hook-failures/render.ts "$RUNNER_TEMP/gemini.json" "$RUNNER_TEMP/codex.json"
+      - uses: actions/checkout@v4
+        with:
+          repository: anomalyco/opencode
+          ref: v1.19.4
+          path: .opencode-src
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - run: bun install
+        working-directory: .opencode-src
+      - name: opencode's plugin loader and trigger on each behaviour
+        run: |
+          cp study/hook-failures/opencode.hook-failures.test.ts .opencode-src/packages/opencode/test/plugin/
+          cd .opencode-src/packages/opencode
+          HOOK_STUDY_OUT="$RUNNER_TEMP/opencode.json" bun test test/plugin/opencode.hook-failures.test.ts --timeout 60000
+          cat "$RUNNER_TEMP/opencode.json"
+      - run: npx tsx study/hook-failures/render.ts "$RUNNER_TEMP/gemini.json" "$RUNNER_TEMP/codex.json" "$RUNNER_TEMP/opencode.json"
       - name: Fail if the committed study no longer matches
         run: |
           git status --porcelain study/hook-failures
