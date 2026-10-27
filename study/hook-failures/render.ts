@@ -1,6 +1,6 @@
 /**
- * Turn the two agents' raw outcomes into RESULTS.md.
- * Usage: npx tsx study/hook-failures/render.ts <gemini.json> <codex.json>
+ * Turn the three agents' raw outcomes into RESULTS.md.
+ * Usage: npx tsx study/hook-failures/render.ts <gemini.json> <codex.json> <opencode.json>
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -8,10 +8,35 @@ import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const cases = JSON.parse(readFileSync(join(here, 'cases.json'), 'utf8')) as Array<{ id: string; describe: string }>;
-const [geminiPath, codexPath] = process.argv.slice(2);
-if (!geminiPath || !codexPath) throw new Error('usage: render.ts <gemini.json> <codex.json>');
+const [geminiPath, codexPath, opencodePath] = process.argv.slice(2);
+if (!geminiPath || !codexPath || !opencodePath) throw new Error('usage: render.ts <gemini.json> <codex.json> <opencode.json>');
 const gemini = JSON.parse(readFileSync(geminiPath, 'utf8')) as Record<string, string>;
 const codex = JSON.parse(readFileSync(codexPath, 'utf8')) as Record<string, string>;
+const opencode = JSON.parse(readFileSync(opencodePath, 'utf8')) as Record<string, string>;
+
+// opencode's hooks are in-process plugins with no deny answer: a plugin blocks by throwing.
+const OPENCODE_CASES: Array<[string, string]> = [
+  ['throws', 'throws an error (how a plugin says no; the control)'],
+  ['rejects', 'returns a rejected promise'],
+  ['nothing', 'returns without doing anything (no opinion)'],
+  ['rewrites', 'rewrites the command to a safe one'],
+  ['hangs', 'never returns'],
+];
+const opencodeCell = (outcome: string | undefined): string => {
+  switch (outcome) {
+    case 'BLOCKED':
+      return 'blocked';
+    case 'RUNS':
+      return '**runs**';
+    case 'RUNS_REWRITTEN':
+      return 'runs the rewritten command';
+    case 'HANGS':
+      return '**waits forever** (no timeout)';
+    default:
+      throw new Error(`unknown opencode outcome ${String(outcome)}`);
+  }
+};
+const opencodeRows = OPENCODE_CASES.map(([id, describe]) => `| ${describe} | ${opencodeCell(opencode[id])} |`);
 
 const cell = (outcome: string | undefined): string => {
   if (outcome === undefined) throw new Error('missing outcome');
@@ -37,6 +62,16 @@ Outside "allow" and "no opinion", the command still runs in these cases:
 
 - Gemini CLI: ${opens(gemini).join(', ') || 'none'}
 - Codex: ${opens(codex).join(', ') || 'none'}
+
+## opencode
+
+opencode's hooks are different: a \`tool.execute.before\` plugin is JavaScript loaded into opencode
+itself, and it says no by throwing. Each behaviour below is a real plugin file loaded through
+opencode's config, and the call is the same \`plugin.trigger\` opencode makes before every tool.
+
+| The plugin... | opencode |
+| --- | --- |
+${opencodeRows.join('\n')}
 `;
 writeFileSync(join(here, 'RESULTS.md'), md);
 process.stdout.write(md);

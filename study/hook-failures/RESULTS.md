@@ -22,3 +22,17 @@ Outside "allow" and "no opinion", the command still runs in these cases:
 
 - Gemini CLI: crash, exit2-silent, bad-json, timeout
 - Codex: ask, crash, exit2-silent, bad-json, deny-extra-field, timeout
+
+## opencode
+
+opencode's hooks are different: a `tool.execute.before` plugin is JavaScript loaded into opencode
+itself, and it says no by throwing. Each behaviour below is a real plugin file loaded through
+opencode's config, and the call is the same `plugin.trigger` opencode makes before every tool.
+
+| The plugin... | opencode |
+| --- | --- |
+| throws an error (how a plugin says no; the control) | blocked |
+| returns a rejected promise | blocked |
+| returns without doing anything (no opinion) | **runs** |
+| rewrites the command to a safe one | runs the rewritten command |
+| never returns | **waits forever** (no timeout) |
