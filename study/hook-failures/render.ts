@@ -1,5 +1,5 @@
 /**
- * Turn the two agents' raw outcomes into RESULTS.md.
+ * Turn the three agents' raw outcomes into RESULTS.md.
  * Usage: npx tsx study/hook-failures/render.ts <gemini.json> <codex.json> <opencode.json>
  */
 import { readFileSync, writeFileSync } from 'node:fs';

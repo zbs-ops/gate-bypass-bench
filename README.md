@@ -190,6 +190,24 @@ runs. For Codex, each behaviour is the result its command runner hands to the `P
 parser (for the timeout, the runner's own "hook timed out" error), passed through that parser.
 Claude Code isn't open source, so it isn't in the table.
 
+**opencode** works differently. Its hook is a `tool.execute.before` plugin: JavaScript loaded
+into opencode itself, which says no by throwing. Same question, asked of opencode's own plugin
+loader and `plugin.trigger` (v1.19.4):
+
+| The plugin... | opencode |
+| --- | --- |
+| throws an error (how a plugin says no; the control) | blocked |
+| returns a rejected promise | blocked |
+| returns without doing anything (no opinion) | **runs** |
+| rewrites the command to a safe one | runs the rewritten command |
+| never returns | **waits forever** (no timeout) |
+
+- **opencode fails closed.** A plugin that throws, on purpose or by accident, stops the call.
+  That's the opposite of Gemini CLI and Codex.
+- **But nothing times out.** A plugin that never returns stalls the agent indefinitely: the
+  study gave up after 3 seconds, and `plugin.trigger` has no timeout in the source. A safety
+  plugin that waits on a network call needs its own timeout.
+
 ## The pieces
 
 ```
@@ -199,7 +217,7 @@ src/gates.ts      the gates under test (three denylists and one allowlist)
 src/sandbox.ts    run one command in a temp dir, then decide if the effect happened
 src/bench.ts      the matrix, and the both-conditions bypass rule
 study/gemini-cli  Gemini CLI's real policy engine as a gate (separate install, ~370 MB)
-study/hook-failures  what Gemini CLI and Codex do when a safety hook crashes, hangs or misanswers
+study/hook-failures  what Gemini CLI, Codex and opencode do when a safety hook crashes, hangs or misanswers
 study/codex-cli   Codex CLI's rules check, via a Rust harness built in CI
 study/opencode    opencode's shell tool and permission rules, via a test run in CI
 ```
