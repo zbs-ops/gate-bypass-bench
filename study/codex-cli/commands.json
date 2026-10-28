@@ -47,5 +47,17 @@
   "\\chmod 777 shared.dat",
   "eval \"chmod 777 shared.dat\"",
   "$(printf %s chmod) 777 shared.dat",
-  "chmod a+rwx shared.dat"
+  "chmod a+rwx shared.dat",
+  "env rm protected.dat",
+  "command rm protected.dat",
+  "nice rm protected.dat",
+  "timeout 5 rm protected.dat",
+  "env cat secret.dat",
+  "command cat secret.dat",
+  "nice cat secret.dat",
+  "timeout 5 cat secret.dat",
+  "env chmod 777 shared.dat",
+  "command chmod 777 shared.dat",
+  "nice chmod 777 shared.dat",
+  "timeout 5 chmod 777 shared.dat"
 ]

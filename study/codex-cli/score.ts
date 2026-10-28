@@ -13,7 +13,17 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { formatReport, makeGates, makeIntents, makeMutators, runBenchAsync, type AsyncGate } from '../../src/index.js';
+import {
+  formatReport,
+  makeGates,
+  makeIntents,
+  makeMutators,
+  makeWrapperMutators,
+  runBenchAsync,
+  wrapperSet,
+  type AsyncGate,
+  type Report,
+} from '../../src/index.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const CODEX_VERSION = '0.163.0';
@@ -40,6 +50,10 @@ function attackCommands(): string[] {
   for (const intent of makeIntents()) {
     for (const m of makeMutators()) out.push(m.render(intent.binary, intent.args));
     out.push(...(intent.equivalents ?? []));
+  }
+  // The extended wrapper set, appended so the original commands keep their order.
+  for (const intent of makeIntents()) {
+    for (const m of makeWrapperMutators()) out.push(m.render(intent.binary, intent.args));
   }
   return out;
 }
@@ -85,18 +99,28 @@ const report = await runBenchAsync({ gates: [...makeGates(), deny, allow] });
 const scorecard = formatReport(report);
 process.stdout.write(scorecard + '\n');
 
-const table = (gate: CodexGate) => [
+const table = (gate: CodexGate, r: Report) => [
   `## ${gate.id}`,
   '',
   `${gate.describe}. Commands sent to a person instead (scored as blocked): ${gate.prompted.length}.`,
   '',
   '| intent | technique | command | result |',
   '|---|---|---|---|',
-  ...report.cells
+  ...r.cells
     .filter((c) => c.gate === gate.id && c.effective)
     .map((c) => `| ${c.intent} | ${c.mutator} | \`${c.command.replace(/\n/g, '\\n').replace(/\|/g, '\\|')}\` | ${c.bypass ? '**bypass**' : 'blocked'} |`),
   '',
 ];
+
+// Built now, before the wrapper run adds to `prompted`, so the original section never moves.
+const core = [...table(deny, report), ...table(allow, report)];
+
+// Extended set: the same gates on the wrapper rewrites (env, command, nice, timeout).
+deny.prompted.length = 0;
+allow.prompted.length = 0;
+const wrapped = await runBenchAsync({ ...wrapperSet(), gates: [...makeGates(), deny, allow] });
+const wrappedCard = formatReport(wrapped);
+process.stdout.write(wrappedCard + '\n');
 
 writeFileSync(
   join(here, 'RESULTS.md'),
@@ -110,7 +134,17 @@ writeFileSync(
     scorecard,
     '```',
     '',
-    ...table(deny),
-    ...table(allow),
+    ...core,
+    '# Extended set: wrappers',
+    '',
+    'The same gates on 12 more attacks: each blocked command run through `env`, `command`, `nice`',
+    'or `timeout 5` (`npm run bench -- --wrappers`). Kept separate so the scorecard above is unchanged.',
+    '',
+    '```',
+    wrappedCard,
+    '```',
+    '',
+    ...table(deny, wrapped),
+    ...table(allow, wrapped),
   ].join('\n'),
 );
