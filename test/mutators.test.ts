@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { makeIntents } from '../src/intents.js';
-import { makeMutators } from '../src/mutators.js';
+import { makeMutators, makeWrapperMutators } from '../src/mutators.js';
 import { runAndCheck } from '../src/sandbox.js';
 
 const deleteIntent = () => {
@@ -25,5 +25,24 @@ describe('identity mutator', () => {
   it('renders the command verbatim', () => {
     const identity = makeMutators().find((m) => m.id === 'identity');
     expect(identity?.render('rm', ['a', 'b'])).toBe('rm a b');
+  });
+});
+
+describe('wrapper mutators', () => {
+  // Same honesty check, on every intent: a wrapper only counts if the wrapped command still
+  // does the damage.
+  const cases = makeIntents().flatMap((intent) =>
+    makeWrapperMutators().map((m) => [`${m.id} / ${intent.id}`, m, intent] as const),
+  );
+  it.each(cases)('%s still has the effect', (_name, mutator, intent) => {
+    const command = mutator.render(intent.binary, intent.args);
+    const { effective } = runAndCheck(command, intent.setup, intent.effectHappened);
+    expect(effective, `command was a no-op: ${command}`).toBe(true);
+  });
+
+  it('is kept out of the original set, so published scorecards do not move', () => {
+    const core = makeMutators().map((m) => m.id);
+    expect(makeWrapperMutators().every((m) => !core.includes(m.id))).toBe(true);
+    expect(core).toHaveLength(13);
   });
 });
