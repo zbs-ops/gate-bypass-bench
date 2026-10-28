@@ -341,6 +341,48 @@
       }
     }
   ],
+  "command cat secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "command cat secret.dat"
+      ],
+      "always": [
+        "command *"
+      ],
+      "metadata": {
+        "command": "command cat secret.dat"
+      }
+    }
+  ],
+  "command chmod 777 shared.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "command chmod 777 shared.dat"
+      ],
+      "always": [
+        "command *"
+      ],
+      "metadata": {
+        "command": "command chmod 777 shared.dat"
+      }
+    }
+  ],
+  "command rm protected.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "command rm protected.dat"
+      ],
+      "always": [
+        "command *"
+      ],
+      "metadata": {
+        "command": "command rm protected.dat"
+      }
+    }
+  ],
   "echo Y2F0IHNlY3JldC5kYXQ= | base64 -d | sh": [
     {
       "permission": "bash",
@@ -406,6 +448,48 @@
       ],
       "metadata": {
         "command": "echo hi"
+      }
+    }
+  ],
+  "env cat secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "env cat secret.dat"
+      ],
+      "always": [
+        "env *"
+      ],
+      "metadata": {
+        "command": "env cat secret.dat"
+      }
+    }
+  ],
+  "env chmod 777 shared.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "env chmod 777 shared.dat"
+      ],
+      "always": [
+        "env *"
+      ],
+      "metadata": {
+        "command": "env chmod 777 shared.dat"
+      }
+    }
+  ],
+  "env rm protected.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "env rm protected.dat"
+      ],
+      "always": [
+        "env *"
+      ],
+      "metadata": {
+        "command": "env rm protected.dat"
       }
     }
   ],
@@ -520,6 +604,48 @@
       ],
       "metadata": {
         "command": "ls && rm notes.txt"
+      }
+    }
+  ],
+  "nice cat secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "nice cat secret.dat"
+      ],
+      "always": [
+        "nice *"
+      ],
+      "metadata": {
+        "command": "nice cat secret.dat"
+      }
+    }
+  ],
+  "nice chmod 777 shared.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "nice chmod 777 shared.dat"
+      ],
+      "always": [
+        "nice *"
+      ],
+      "metadata": {
+        "command": "nice chmod 777 shared.dat"
+      }
+    }
+  ],
+  "nice rm protected.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "nice rm protected.dat"
+      ],
+      "always": [
+        "nice *"
+      ],
+      "metadata": {
+        "command": "nice rm protected.dat"
       }
     }
   ],
@@ -652,6 +778,48 @@
       ],
       "metadata": {
         "command": "sed '' secret.dat"
+      }
+    }
+  ],
+  "timeout 5 cat secret.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "timeout 5 cat secret.dat"
+      ],
+      "always": [
+        "timeout *"
+      ],
+      "metadata": {
+        "command": "timeout 5 cat secret.dat"
+      }
+    }
+  ],
+  "timeout 5 chmod 777 shared.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "timeout 5 chmod 777 shared.dat"
+      ],
+      "always": [
+        "timeout *"
+      ],
+      "metadata": {
+        "command": "timeout 5 chmod 777 shared.dat"
+      }
+    }
+  ],
+  "timeout 5 rm protected.dat": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "timeout 5 rm protected.dat"
+      ],
+      "always": [
+        "timeout *"
+      ],
+      "metadata": {
+        "command": "timeout 5 rm protected.dat"
       }
     }
   ],
