@@ -4,7 +4,7 @@
 >
 > **Approach:** rewrite forbidden commands in known bypass styles, run each in a sandbox, and count a bypass only when the forbidden effect really happened.
 >
-> **Proof:** real deny rules in Gemini CLI, OpenAI's Codex CLI and opencode were bypassed 84%, 78% and 84% of the time. The same engines used as allowlists: 0%. 49 tests.
+> **Proof:** real deny rules in Gemini CLI, OpenAI's Codex CLI and opencode were bypassed 84%, 78% and 84% of the time. The same engines used as allowlists: 0%. Put `timeout 5` in front and every deny rule misses all 12. 64 tests.
 
 
 **How often can an AI agent's command gate be talked around?** This measures it.
@@ -155,6 +155,28 @@ What this does and doesn't show: the permission check, not a full session with a
 command goes to a person anyway.
 
 **Three products, three parsers, the same result: deny rules leak, allowlists hold.**
+
+### Wrappers: one word in front, and every deny rule misses
+
+Agents wrap commands all the time (`timeout 60 npm test`). So I ran each blocked command through
+four wrappers, `env`, `command`, `nice` and `timeout 5`: 12 more attacks, each checked to really do the
+damage. They're a separate set (`npm run bench -- --wrappers`), so every number above is unchanged.
+
+```
+gate                      bypass rate   (bypasses / effective)
+tokenized-denylist              100%   (12/12)
+gemini-cli-deny-rule            100%   (12/12)
+codex-cli-deny-rule             100%   (12/12)
+opencode-deny-rule              100%   (12/12)
+any of the three as allowlist     0%   (0/12)
+```
+
+All three products judge the first word. With `rm` denied, `timeout 5 rm protected.dat` runs in
+Gemini CLI (YOLO mode), Codex CLI (approval "never") and opencode (`"*": "allow"`). Each verdict
+comes from that product's own code at the pinned version, and the full tables are at the end of each
+study's RESULTS.md. Under allow rules, all 12 are refused or sent to a person, because `timeout`
+isn't on the list. That's the cost of an allowlist: it also stops the harmless `timeout 60 npm test`
+until you allow `timeout` (and then you need a gate that looks through it).
 
 ## When the hook itself misbehaves
 
