@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { runBench } from '../src/bench.js';
+import { runBench, wrapperSet } from '../src/bench.js';
 
 const score = (gate: string) => {
   const report = runBench();
@@ -50,5 +50,21 @@ describe('the benchmark as a whole', () => {
         expect(c.effective).toBe(true);
       }
     }
+  });
+});
+
+describe('the wrapper set', () => {
+  it('runs 12 attacks, all effective, and leaves the original 45 alone', () => {
+    const extended = runBench(wrapperSet());
+    const cells = extended.cells.filter((c) => c.gate === 'allowlist');
+    expect(cells).toHaveLength(12);
+    expect(cells.every((c) => c.effective)).toBe(true);
+    expect(runBench().cells.filter((c) => c.gate === 'allowlist' && c.effective)).toHaveLength(45);
+  });
+
+  it('gets past a first-word denylist but not the allowlist', () => {
+    const score = (id: string) => runBench(wrapperSet()).scores.find((s) => s.gate === id);
+    expect(score('tokenized-denylist')?.bypasses).toBe(12);
+    expect(score('allowlist')?.bypasses).toBe(0);
   });
 });

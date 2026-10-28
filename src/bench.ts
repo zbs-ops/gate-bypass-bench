@@ -1,6 +1,6 @@
 import { makeGates } from './gates.js';
 import { makeIntents } from './intents.js';
-import { makeMutators } from './mutators.js';
+import { makeMutators, makeWrapperMutators } from './mutators.js';
 import { runAndCheck } from './sandbox.js';
 import type { AsyncGate, Cell, GateScore, Intent, Mutator, Gate, Report } from './types.js';
 
@@ -114,4 +114,15 @@ export async function runBenchAsync(options: AsyncBenchOptions = {}): Promise<Re
     }
   }
   return { cells, scores: score(cells, gates) };
+}
+
+/**
+ * The extended set: every intent through the wrapper rewrites only. Equivalents are left out
+ * because the original set already runs them, so each attack is counted once.
+ */
+export function wrapperSet(): { intents: Intent[]; mutators: Mutator[] } {
+  return {
+    intents: makeIntents().map((intent) => ({ ...intent, equivalents: [] })),
+    mutators: makeWrapperMutators(),
+  };
 }
