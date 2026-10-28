@@ -1,4 +1,4 @@
-export { runBench, runBenchAsync } from './bench.js';
+export { runBench, runBenchAsync, wrapperSet } from './bench.js';
 export type { BenchOptions, AsyncBenchOptions } from './bench.js';
 export { makeGates, resolveFirstBinary, BLOCKED_BINARIES } from './gates.js';
 export { makeIntents } from './intents.js';
