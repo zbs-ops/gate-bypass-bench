@@ -1,6 +1,6 @@
 {
   "name": "gate-bypass-bench",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "A benchmark that measures how often AI-agent command gates can be bypassed, by rewriting a forbidden command and counting a bypass only when the forbidden effect actually happens in a sandbox.",
   "type": "module",
   "license": "MIT",
