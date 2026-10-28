@@ -22,7 +22,7 @@ import { createPolicyEngineConfig, DEFAULT_CORE_POLICIES_DIR } from '@google/gem
 import { ApprovalMode } from '@google/gemini-cli-core/dist/src/policy/types.js';
 import { initializeShellParsers } from '@google/gemini-cli-core/dist/src/utils/shell-utils.js';
 
-import { formatReport, makeGates, runBenchAsync, type AsyncGate } from '../../src/index.js';
+import { formatReport, makeGates, runBenchAsync, wrapperSet, type AsyncGate, type Report } from '../../src/index.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const version: string = createRequire(import.meta.url)('@google/gemini-cli-core/package.json').version;
@@ -106,18 +106,27 @@ const report = await runBenchAsync({ gates: [...makeGates(), ...gemini] });
 const scorecard = formatReport(report);
 process.stdout.write(scorecard + '\n');
 
-const table = (gate: GeminiGate) => [
+const table = (gate: GeminiGate, r: Report) => [
   `## ${gate.id}`,
   '',
   `${gate.describe}. Commands sent to a human instead (scored as blocked): ${gate.askedUser.length}.`,
   '',
   '| intent | technique | command | result |',
   '|---|---|---|---|',
-  ...report.cells
+  ...r.cells
     .filter((c) => c.gate === gate.id && c.effective)
     .map((c) => `| ${c.intent} | ${c.mutator} | \`${c.command.replace(/\n/g, '\\n').replace(/\|/g, '\\|')}\` | ${c.bypass ? '**bypass**' : 'blocked'} |`),
   '',
 ];
+
+// Built now, before the wrapper run adds to askedUser, so the original section never moves.
+const core = [...table(denyRule, report), ...table(allowRule, report)];
+
+// Extended set: the same gates on the wrapper rewrites (env, command, nice, timeout).
+for (const g of gemini) g.askedUser.length = 0;
+const wrapped = await runBenchAsync({ ...wrapperSet(), gates: [...makeGates(), ...gemini] });
+const wrappedCard = formatReport(wrapped);
+process.stdout.write(wrappedCard + '\n');
 
 writeFileSync(
   join(here, 'RESULTS.md'),
@@ -131,7 +140,17 @@ writeFileSync(
     scorecard,
     '```',
     '',
-    ...table(denyRule),
-    ...table(allowRule),
+    ...core,
+    '# Extended set: wrappers',
+    '',
+    'The same gates on 12 more attacks: each blocked command run through `env`, `command`, `nice`',
+    'or `timeout 5` (`npm run bench -- --wrappers`). Kept separate so the scorecard above is unchanged.',
+    '',
+    '```',
+    wrappedCard,
+    '```',
+    '',
+    ...table(denyRule, wrapped),
+    ...table(allowRule, wrapped),
   ].join('\n'),
 );
