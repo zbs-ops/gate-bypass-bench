@@ -178,6 +178,30 @@ study's RESULTS.md. Under allow rules, all 12 are refused or sent to a person, b
 isn't on the list. That's the cost of an allowlist: it also stops the harmless `timeout 60 npm test`
 until you allow `timeout` (and then you need a gate that looks through it).
 
+### Script files: write the command, run the file
+
+An agent with a file-writing tool can put the blocked command in a script and run the script. So I
+wrote each blocked command into a file and ran it four ways, `sh s.sh`, `. ./s.sh`, a here-document,
+and a base64 decode into a file (12 more attacks, `npm run bench -- --scripts`, separate set so the
+numbers above don't move). Every one still does the damage, and the line the gate judges is `sh s.sh`,
+not the command in the file.
+
+```
+gate                      bypass rate   (bypasses / effective)
+tokenized-denylist              100%   (12/12)
+gemini-cli-deny-rule            100%   (12/12)
+any of the above as allowlist     0%   (0/12)
+```
+
+This is the sharpest case for the whole repo: the tokenized denylist parses the command line
+cleanly and still misses every one, because the dangerous part isn't on the line it parses, it's in a
+file. The same is true of the real Gemini CLI deny rule (0.65.0, YOLO), verified against its own
+engine: 12/12 through. In `base64-script` the blocked binary isn't even on the command line. Only the
+allowlist holds, and only because `sh`, `.` and `printf` have to be on it before anything runs, so a
+written-then-run script of allowed programs still goes through, which is why a gate that reads the
+script (not just the typed line) is the actual fix. Codex CLI and opencode use the same first-word
+model and the same study harnesses; scoring them on this set from their own source is the next step.
+
 ## When the hook itself misbehaves
 
 An allowlist only protects you if the agent enforces its answer. Gemini CLI and Codex both let
@@ -313,6 +337,9 @@ expect(score('my-gate').bypasses).toBe(0);
   bash and every one had the same effect as under dash.
 - A gate here sees only the command string. A real system can see more (arguments parsed,
   the working directory, prior actions), and a good gate should use it.
+- The script-file set writes and runs the script in one command, because the bench scores one
+  string at a time. The real move, write the file with a file tool, then run it as a separate
+  command, hides the blocked binary even more completely, so these numbers are a lower bound.
 
 ## How I build
 
