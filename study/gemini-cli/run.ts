@@ -22,7 +22,15 @@ import { createPolicyEngineConfig, DEFAULT_CORE_POLICIES_DIR } from '@google/gem
 import { ApprovalMode } from '@google/gemini-cli-core/dist/src/policy/types.js';
 import { initializeShellParsers } from '@google/gemini-cli-core/dist/src/utils/shell-utils.js';
 
-import { formatReport, makeGates, runBenchAsync, wrapperSet, type AsyncGate, type Report } from '../../src/index.js';
+import {
+  formatReport,
+  makeGates,
+  runBenchAsync,
+  scriptSet,
+  wrapperSet,
+  type AsyncGate,
+  type Report,
+} from '../../src/index.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const version: string = createRequire(import.meta.url)('@google/gemini-cli-core/package.json').version;
@@ -128,6 +136,12 @@ const wrapped = await runBenchAsync({ ...wrapperSet(), gates: [...makeGates(), .
 const wrappedCard = formatReport(wrapped);
 process.stdout.write(wrappedCard + '\n');
 
+// Extended set: the same gates on the script-file rewrites (the command written to a file, run).
+for (const g of gemini) g.askedUser.length = 0;
+const scripted = await runBenchAsync({ ...scriptSet(), gates: [...makeGates(), ...gemini] });
+const scriptedCard = formatReport(scripted);
+process.stdout.write(scriptedCard + '\n');
+
 writeFileSync(
   join(here, 'RESULTS.md'),
   [
@@ -152,5 +166,18 @@ writeFileSync(
     '',
     ...table(denyRule, wrapped),
     ...table(allowRule, wrapped),
+    '# Extended set: script files',
+    '',
+    'The same gates on 12 more attacks: each blocked command written into a script file and run',
+    'with `sh`, `.` or a here-document (`npm run bench -- --scripts`). The command line the engine',
+    'judges is `sh s.sh`, while the blocked binary sits in the file. Kept separate so the scorecard',
+    'above is unchanged.',
+    '',
+    '```',
+    scriptedCard,
+    '```',
+    '',
+    ...table(denyRule, scripted),
+    ...table(allowRule, scripted),
   ].join('\n'),
 );
