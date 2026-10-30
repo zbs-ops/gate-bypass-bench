@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { runBench, wrapperSet } from '../src/bench.js';
+import { runBench, scriptSet, wrapperSet } from '../src/bench.js';
 
 const score = (gate: string) => {
   const report = runBench();
@@ -64,6 +64,23 @@ describe('the wrapper set', () => {
 
   it('gets past a first-word denylist but not the allowlist', () => {
     const score = (id: string) => runBench(wrapperSet()).scores.find((s) => s.gate === id);
+    expect(score('tokenized-denylist')?.bypasses).toBe(12);
+    expect(score('allowlist')?.bypasses).toBe(0);
+  });
+});
+
+describe('the script-file set', () => {
+  it('runs 12 attacks, all effective, and leaves the original 45 alone', () => {
+    const extended = runBench(scriptSet());
+    const cells = extended.cells.filter((c) => c.gate === 'allowlist');
+    expect(cells).toHaveLength(12);
+    expect(cells.every((c) => c.effective)).toBe(true);
+    expect(runBench().cells.filter((c) => c.gate === 'allowlist' && c.effective)).toHaveLength(45);
+  });
+
+  it('defeats every denylist but not the allowlist', () => {
+    const score = (id: string) => runBench(scriptSet()).scores.find((s) => s.gate === id);
+    // A command-line parser can't see into a file: the tokenized denylist misses all 12.
     expect(score('tokenized-denylist')?.bypasses).toBe(12);
     expect(score('allowlist')?.bypasses).toBe(0);
   });

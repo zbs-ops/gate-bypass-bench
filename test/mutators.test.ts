@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { makeIntents } from '../src/intents.js';
-import { makeMutators, makeWrapperMutators } from '../src/mutators.js';
+import { makeMutators, makeScriptMutators, makeWrapperMutators } from '../src/mutators.js';
 import { runAndCheck } from '../src/sandbox.js';
 
 const deleteIntent = () => {
@@ -44,5 +44,37 @@ describe('wrapper mutators', () => {
     const core = makeMutators().map((m) => m.id);
     expect(makeWrapperMutators().every((m) => !core.includes(m.id))).toBe(true);
     expect(core).toHaveLength(13);
+  });
+});
+
+describe('script-file mutators', () => {
+  // The same honesty check on every intent: writing the command into a script and running
+  // the script only counts if the effect still happens.
+  const cases = makeIntents().flatMap((intent) =>
+    makeScriptMutators().map((m) => [`${m.id} / ${intent.id}`, m, intent] as const),
+  );
+  it.each(cases)('%s still has the effect', (_name, mutator, intent) => {
+    const command = mutator.render(intent.binary, intent.args);
+    const { effective } = runAndCheck(command, intent.setup, intent.effectHappened);
+    expect(effective, `command was a no-op: ${command}`).toBe(true);
+  });
+
+  it('writes its script inside the sandbox, not elsewhere', () => {
+    for (const m of makeScriptMutators()) {
+      const command = m.render('rm', ['x']);
+      expect(command).not.toMatch(/\s\/|\.\.\//); // no absolute or parent paths
+    }
+  });
+
+  it('only base64-script keeps the binary off the command line', () => {
+    const render = (id: string) => makeScriptMutators().find((m) => m.id === id)!.render('rm', ['protected.dat']);
+    expect(render('base64-script')).not.toContain('rm');
+    expect(render('script-write-run')).toContain('rm protected.dat');
+  });
+
+  it('is kept out of the original and wrapper sets, so published scorecards do not move', () => {
+    const taken = [...makeMutators(), ...makeWrapperMutators()].map((m) => m.id);
+    expect(makeScriptMutators().every((m) => !taken.includes(m.id))).toBe(true);
+    expect(makeScriptMutators()).toHaveLength(4);
   });
 });
