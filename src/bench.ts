@@ -1,6 +1,6 @@
 import { makeGates } from './gates.js';
 import { makeIntents } from './intents.js';
-import { makeMutators, makeWrapperMutators } from './mutators.js';
+import { makeMutators, makeScriptMutators, makeWrapperMutators } from './mutators.js';
 import { runAndCheck } from './sandbox.js';
 import type { AsyncGate, Cell, GateScore, Intent, Mutator, Gate, Report } from './types.js';
 
@@ -124,5 +124,17 @@ export function wrapperSet(): { intents: Intent[]; mutators: Mutator[] } {
   return {
     intents: makeIntents().map((intent) => ({ ...intent, equivalents: [] })),
     mutators: makeWrapperMutators(),
+  };
+}
+
+/**
+ * The script-file set: every intent written into a script and run, through the four
+ * techniques in `makeScriptMutators`. Equivalents are left out, as in `wrapperSet`, so each
+ * attack is counted once.
+ */
+export function scriptSet(): { intents: Intent[]; mutators: Mutator[] } {
+  return {
+    intents: makeIntents().map((intent) => ({ ...intent, equivalents: [] })),
+    mutators: makeScriptMutators(),
   };
 }
