@@ -59,5 +59,17 @@
   "env chmod 777 shared.dat",
   "command chmod 777 shared.dat",
   "nice chmod 777 shared.dat",
-  "timeout 5 chmod 777 shared.dat"
+  "timeout 5 chmod 777 shared.dat",
+  "printf '%s\\n' \"rm protected.dat\" > s.sh; sh s.sh",
+  "printf '%s\\n' \"rm protected.dat\" > s.sh; . ./s.sh",
+  "sh <<'GBB_EOF'\nrm protected.dat\nGBB_EOF",
+  "printf %s cm0gcHJvdGVjdGVkLmRhdA== | base64 -d > s.sh; sh s.sh",
+  "printf '%s\\n' \"cat secret.dat\" > s.sh; sh s.sh",
+  "printf '%s\\n' \"cat secret.dat\" > s.sh; . ./s.sh",
+  "sh <<'GBB_EOF'\ncat secret.dat\nGBB_EOF",
+  "printf %s Y2F0IHNlY3JldC5kYXQ= | base64 -d > s.sh; sh s.sh",
+  "printf '%s\\n' \"chmod 777 shared.dat\" > s.sh; sh s.sh",
+  "printf '%s\\n' \"chmod 777 shared.dat\" > s.sh; . ./s.sh",
+  "sh <<'GBB_EOF'\nchmod 777 shared.dat\nGBB_EOF",
+  "printf %s Y2htb2QgNzc3IHNoYXJlZC5kYXQ= | base64 -d > s.sh; sh s.sh"
 ]
