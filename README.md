@@ -190,17 +190,20 @@ not the command in the file.
 gate                      bypass rate   (bypasses / effective)
 tokenized-denylist              100%   (12/12)
 gemini-cli-deny-rule            100%   (12/12)
-any of the above as allowlist     0%   (0/12)
+codex-cli-deny-rule             100%   (12/12)
+opencode-deny-rule              100%   (12/12)
+any of the three as allowlist     0%   (0/12)
 ```
 
 This is the sharpest case for the whole repo: the tokenized denylist parses the command line
 cleanly and still misses every one, because the dangerous part isn't on the line it parses, it's in a
-file. The same is true of the real Gemini CLI deny rule (0.65.0, YOLO), verified against its own
-engine: 12/12 through. In `base64-script` the blocked binary isn't even on the command line. Only the
+file. The same is true of the deny rules of all three products, each scored by its own code: Gemini
+CLI 0.65.0 (YOLO), Codex CLI 0.163.0 (approval "never") and opencode 1.19.4 (`"*": "allow"`) all let
+12 of 12 through. In `base64-script` the blocked binary isn't even on the command line. Only the
 allowlist holds, and only because `sh`, `.` and `printf` have to be on it before anything runs, so a
 written-then-run script of allowed programs still goes through, which is why a gate that reads the
-script (not just the typed line) is the actual fix. Codex CLI and opencode use the same first-word
-model and the same study harnesses; scoring them on this set from their own source is the next step.
+script (not just the typed line) is the actual fix. The full tables are at the end of each study's
+RESULTS.md.
 
 ## When the hook itself misbehaves
 
