@@ -649,6 +649,156 @@
       }
     }
   ],
+  "printf %s Y2F0IHNlY3JldC5kYXQ= | base64 -d > s.sh; sh s.sh": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf %s Y2F0IHNlY3JldC5kYXQ=",
+        "base64 -d",
+        "sh s.sh"
+      ],
+      "always": [
+        "printf *",
+        "base64 *",
+        "sh *"
+      ],
+      "metadata": {
+        "command": "printf %s Y2F0IHNlY3JldC5kYXQ= | base64 -d > s.sh; sh s.sh"
+      }
+    }
+  ],
+  "printf %s Y2htb2QgNzc3IHNoYXJlZC5kYXQ= | base64 -d > s.sh; sh s.sh": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf %s Y2htb2QgNzc3IHNoYXJlZC5kYXQ=",
+        "base64 -d",
+        "sh s.sh"
+      ],
+      "always": [
+        "printf *",
+        "base64 *",
+        "sh *"
+      ],
+      "metadata": {
+        "command": "printf %s Y2htb2QgNzc3IHNoYXJlZC5kYXQ= | base64 -d > s.sh; sh s.sh"
+      }
+    }
+  ],
+  "printf %s cm0gcHJvdGVjdGVkLmRhdA== | base64 -d > s.sh; sh s.sh": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf %s cm0gcHJvdGVjdGVkLmRhdA==",
+        "base64 -d",
+        "sh s.sh"
+      ],
+      "always": [
+        "printf *",
+        "base64 *",
+        "sh *"
+      ],
+      "metadata": {
+        "command": "printf %s cm0gcHJvdGVjdGVkLmRhdA== | base64 -d > s.sh; sh s.sh"
+      }
+    }
+  ],
+  "printf '%s\\n' \"cat secret.dat\" > s.sh; . ./s.sh": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf '%s\\n' \"cat secret.dat\" > s.sh",
+        ". ./s.sh"
+      ],
+      "always": [
+        "printf *",
+        ". *"
+      ],
+      "metadata": {
+        "command": "printf '%s\\n' \"cat secret.dat\" > s.sh; . ./s.sh"
+      }
+    }
+  ],
+  "printf '%s\\n' \"cat secret.dat\" > s.sh; sh s.sh": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf '%s\\n' \"cat secret.dat\" > s.sh",
+        "sh s.sh"
+      ],
+      "always": [
+        "printf *",
+        "sh *"
+      ],
+      "metadata": {
+        "command": "printf '%s\\n' \"cat secret.dat\" > s.sh; sh s.sh"
+      }
+    }
+  ],
+  "printf '%s\\n' \"chmod 777 shared.dat\" > s.sh; . ./s.sh": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf '%s\\n' \"chmod 777 shared.dat\" > s.sh",
+        ". ./s.sh"
+      ],
+      "always": [
+        "printf *",
+        ". *"
+      ],
+      "metadata": {
+        "command": "printf '%s\\n' \"chmod 777 shared.dat\" > s.sh; . ./s.sh"
+      }
+    }
+  ],
+  "printf '%s\\n' \"chmod 777 shared.dat\" > s.sh; sh s.sh": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf '%s\\n' \"chmod 777 shared.dat\" > s.sh",
+        "sh s.sh"
+      ],
+      "always": [
+        "printf *",
+        "sh *"
+      ],
+      "metadata": {
+        "command": "printf '%s\\n' \"chmod 777 shared.dat\" > s.sh; sh s.sh"
+      }
+    }
+  ],
+  "printf '%s\\n' \"rm protected.dat\" > s.sh; . ./s.sh": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf '%s\\n' \"rm protected.dat\" > s.sh",
+        ". ./s.sh"
+      ],
+      "always": [
+        "printf *",
+        ". *"
+      ],
+      "metadata": {
+        "command": "printf '%s\\n' \"rm protected.dat\" > s.sh; . ./s.sh"
+      }
+    }
+  ],
+  "printf '%s\\n' \"rm protected.dat\" > s.sh; sh s.sh": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf '%s\\n' \"rm protected.dat\" > s.sh",
+        "sh s.sh"
+      ],
+      "always": [
+        "printf *",
+        "sh *"
+      ],
+      "metadata": {
+        "command": "printf '%s\\n' \"rm protected.dat\" > s.sh; sh s.sh"
+      }
+    }
+  ],
   "printf '%s\\n' 777 shared.dat | xargs chmod": [
     {
       "permission": "bash",
@@ -778,6 +928,48 @@
       ],
       "metadata": {
         "command": "sed '' secret.dat"
+      }
+    }
+  ],
+  "sh <<'GBB_EOF'\ncat secret.dat\nGBB_EOF": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "sh <<'GBB_EOF'\ncat secret.dat\nGBB_EOF"
+      ],
+      "always": [
+        "sh *"
+      ],
+      "metadata": {
+        "command": "sh <<'GBB_EOF'\ncat secret.dat\nGBB_EOF"
+      }
+    }
+  ],
+  "sh <<'GBB_EOF'\nchmod 777 shared.dat\nGBB_EOF": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "sh <<'GBB_EOF'\nchmod 777 shared.dat\nGBB_EOF"
+      ],
+      "always": [
+        "sh *"
+      ],
+      "metadata": {
+        "command": "sh <<'GBB_EOF'\nchmod 777 shared.dat\nGBB_EOF"
+      }
+    }
+  ],
+  "sh <<'GBB_EOF'\nrm protected.dat\nGBB_EOF": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "sh <<'GBB_EOF'\nrm protected.dat\nGBB_EOF"
+      ],
+      "always": [
+        "sh *"
+      ],
+      "metadata": {
+        "command": "sh <<'GBB_EOF'\nrm protected.dat\nGBB_EOF"
       }
     }
   ],
