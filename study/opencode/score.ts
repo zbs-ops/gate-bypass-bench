@@ -18,8 +18,10 @@ import {
   makeGates,
   makeIntents,
   makeMutators,
+  makeScriptMutators,
   makeWrapperMutators,
   runBenchAsync,
+  scriptSet,
   wrapperSet,
   type AsyncGate,
   type Report,
@@ -54,6 +56,10 @@ function attackCommands(): string[] {
   // The extended wrapper set, appended so the original commands keep their order.
   for (const intent of makeIntents()) {
     for (const m of makeWrapperMutators()) out.push(m.render(intent.binary, intent.args));
+  }
+  // The script-file set, appended after the wrappers for the same reason.
+  for (const intent of makeIntents()) {
+    for (const m of makeScriptMutators()) out.push(m.render(intent.binary, intent.args));
   }
   return out;
 }
@@ -122,6 +128,15 @@ const wrapped = await runBenchAsync({ ...wrapperSet(), gates: [...makeGates(), d
 const wrappedCard = formatReport(wrapped);
 process.stdout.write(wrappedCard + '\n');
 
+// Extended set: the same gates on the script-file rewrites (the command written to a file, run).
+// Built after the wrapper tables' prompt counts are read, so those sections don't move either.
+const wrappedTables = [...table(deny, wrapped), ...table(allow, wrapped)];
+deny.prompted.length = 0;
+allow.prompted.length = 0;
+const scripted = await runBenchAsync({ ...scriptSet(), gates: [...makeGates(), deny, allow] });
+const scriptedCard = formatReport(scripted);
+process.stdout.write(scriptedCard + '\n');
+
 writeFileSync(
   join(here, 'RESULTS.md'),
   [
@@ -144,7 +159,19 @@ writeFileSync(
     wrappedCard,
     '```',
     '',
-    ...table(deny, wrapped),
-    ...table(allow, wrapped),
+    ...wrappedTables,
+    '# Extended set: script files',
+    '',
+    'The same gates on 12 more attacks: each blocked command written into a script file and run',
+    'with `sh`, `.` or a here-document (`npm run bench -- --scripts`). The command line the rules',
+    'judge is `sh s.sh`, while the blocked binary sits in the file. Kept separate so the scorecards',
+    'above are unchanged.',
+    '',
+    '```',
+    scriptedCard,
+    '```',
+    '',
+    ...table(deny, scripted),
+    ...table(allow, scripted),
   ].join('\n'),
 );
