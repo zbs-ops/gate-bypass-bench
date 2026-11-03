@@ -1,10 +1,11 @@
-import { runBench, scriptSet, wrapperSet } from './bench.js';
+import { launcherSet, runBench, scriptSet, wrapperSet } from './bench.js';
 import { formatReport } from './report.js';
 
 /**
  * Run the benchmark with the built-in intents, mutators, and gates and print the scorecard.
  * `--wrappers` runs the wrapper set (env / command / nice / timeout rewrites); `--scripts`
- * runs the script-file set (the command written into a file and run).
+ * runs the script-file set (the command written into a file and run); `--launchers` runs the
+ * launcher set (the command run from find -exec or a git alias).
  *
  * Exit code is 0: the built-in denylist gates are bypassable on purpose, so a non-zero exit
  * would just be noise. To guard a gate of your own in CI, assert its bypass rate in a test
@@ -15,7 +16,9 @@ function main(): void {
     ? runBench(wrapperSet())
     : process.argv.includes('--scripts')
       ? runBench(scriptSet())
-      : runBench();
+      : process.argv.includes('--launchers')
+        ? runBench(launcherSet())
+        : runBench();
   process.stdout.write(formatReport(report) + '\n');
 }
 
