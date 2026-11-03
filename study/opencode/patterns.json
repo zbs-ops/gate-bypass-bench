@@ -535,6 +535,132 @@
       }
     }
   ],
+  "find . -maxdepth 0 -exec cat secret.dat \\;": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "find . -maxdepth 0 -exec cat secret.dat \\;"
+      ],
+      "always": [
+        "find *"
+      ],
+      "metadata": {
+        "command": "find . -maxdepth 0 -exec cat secret.dat \\;"
+      }
+    }
+  ],
+  "find . -maxdepth 0 -exec chmod 777 shared.dat \\;": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "find . -maxdepth 0 -exec chmod 777 shared.dat \\;"
+      ],
+      "always": [
+        "find *"
+      ],
+      "metadata": {
+        "command": "find . -maxdepth 0 -exec chmod 777 shared.dat \\;"
+      }
+    }
+  ],
+  "find . -maxdepth 0 -exec rm protected.dat \\;": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "find . -maxdepth 0 -exec rm protected.dat \\;"
+      ],
+      "always": [
+        "find *"
+      ],
+      "metadata": {
+        "command": "find . -maxdepth 0 -exec rm protected.dat \\;"
+      }
+    }
+  ],
+  "find . -maxdepth 0 -exec sh -c 'cat secret.dat' \\;": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "find . -maxdepth 0 -exec sh -c 'cat secret.dat' \\;"
+      ],
+      "always": [
+        "find *"
+      ],
+      "metadata": {
+        "command": "find . -maxdepth 0 -exec sh -c 'cat secret.dat' \\;"
+      }
+    }
+  ],
+  "find . -maxdepth 0 -exec sh -c 'chmod 777 shared.dat' \\;": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "find . -maxdepth 0 -exec sh -c 'chmod 777 shared.dat' \\;"
+      ],
+      "always": [
+        "find *"
+      ],
+      "metadata": {
+        "command": "find . -maxdepth 0 -exec sh -c 'chmod 777 shared.dat' \\;"
+      }
+    }
+  ],
+  "find . -maxdepth 0 -exec sh -c 'rm protected.dat' \\;": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "find . -maxdepth 0 -exec sh -c 'rm protected.dat' \\;"
+      ],
+      "always": [
+        "find *"
+      ],
+      "metadata": {
+        "command": "find . -maxdepth 0 -exec sh -c 'rm protected.dat' \\;"
+      }
+    }
+  ],
+  "find . -maxdepth 0 -execdir cat secret.dat \\;": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "find . -maxdepth 0 -execdir cat secret.dat \\;"
+      ],
+      "always": [
+        "find *"
+      ],
+      "metadata": {
+        "command": "find . -maxdepth 0 -execdir cat secret.dat \\;"
+      }
+    }
+  ],
+  "find . -maxdepth 0 -execdir chmod 777 shared.dat \\;": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "find . -maxdepth 0 -execdir chmod 777 shared.dat \\;"
+      ],
+      "always": [
+        "find *"
+      ],
+      "metadata": {
+        "command": "find . -maxdepth 0 -execdir chmod 777 shared.dat \\;"
+      }
+    }
+  ],
+  "find . -maxdepth 0 -execdir rm protected.dat \\;": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "find . -maxdepth 0 -execdir rm protected.dat \\;"
+      ],
+      "always": [
+        "find *"
+      ],
+      "metadata": {
+        "command": "find . -maxdepth 0 -execdir rm protected.dat \\;"
+      }
+    }
+  ],
   "find . -name protected.dat -delete": [
     {
       "permission": "bash",
@@ -546,6 +672,76 @@
       ],
       "metadata": {
         "command": "find . -name protected.dat -delete"
+      }
+    }
+  ],
+  "find . -name x": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "find . -name x"
+      ],
+      "always": [
+        "find *"
+      ],
+      "metadata": {
+        "command": "find . -name x"
+      }
+    }
+  ],
+  "git -c alias.gbb='!cat secret.dat' gbb": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "git -c alias.gbb='!cat secret.dat' gbb"
+      ],
+      "always": [
+        "git -c *"
+      ],
+      "metadata": {
+        "command": "git -c alias.gbb='!cat secret.dat' gbb"
+      }
+    }
+  ],
+  "git -c alias.gbb='!chmod 777 shared.dat' gbb": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "git -c alias.gbb='!chmod 777 shared.dat' gbb"
+      ],
+      "always": [
+        "git -c *"
+      ],
+      "metadata": {
+        "command": "git -c alias.gbb='!chmod 777 shared.dat' gbb"
+      }
+    }
+  ],
+  "git -c alias.gbb='!rm protected.dat' gbb": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "git -c alias.gbb='!rm protected.dat' gbb"
+      ],
+      "always": [
+        "git -c *"
+      ],
+      "metadata": {
+        "command": "git -c alias.gbb='!rm protected.dat' gbb"
+      }
+    }
+  ],
+  "git status": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "git status"
+      ],
+      "always": [
+        "git status *"
+      ],
+      "metadata": {
+        "command": "git status"
       }
     }
   ],
