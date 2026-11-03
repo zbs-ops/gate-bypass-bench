@@ -346,8 +346,15 @@ expect(score('my-gate').bypasses).toBe(0);
 
 ## How I build
 
-I work with an AI coding assistant as a pair programmer. I decide what gets built, review
-every change, and own what ships.
+I pick the question: how often can the command gates in shipping AI coding tools be talked around, measured against their own code? The building is done by Friday, an AI agent I run. Friday writes the attacks, the sandbox and the harnesses that call each product's real policy engine, opens each change as a pull request, and merges it when CI passes. For each result I get a plain-language write-up.
+
+**Where it runs.** Friday's machine can't build Codex's Rust code or run every product, so the verdicts come from CI. It checks out Codex, opencode and Gemini CLI from source at pinned versions, runs every attack through their own engines, and fails if any committed verdict changes. A new attack set gets its verdicts from a CI run, those are committed, and the next run has to reproduce them.
+
+**Problems hit, and the fixes:**
+
+- **Verdicts came back mangled.** The first script that pulled verdicts out of CI logs counted braces, and attack strings like `${IFS}` broke it. It now collects lines until they parse as JSON. It was checked by regenerating main's committed verdicts from an older run and getting identical files.
+- **Branches that never got tested.** CI here runs on pull requests, so a pushed branch showed nothing for 45 minutes. The pull request now gets opened before waiting on CI.
+- **A precise denylist isn't a safer one.** The whole-word gate was expected to beat the crude substring gate. It did worse (78% vs 31%), because it misses `rm${IFS}file`. That result is reported as found.
 
 ## License
 
