@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { makeIntents } from '../src/intents.js';
-import { makeMutators, makeScriptMutators, makeWrapperMutators } from '../src/mutators.js';
+import { makeLauncherMutators, makeMutators, makeScriptMutators, makeWrapperMutators } from '../src/mutators.js';
 import { runAndCheck } from '../src/sandbox.js';
 
 const deleteIntent = () => {
@@ -76,5 +76,36 @@ describe('script-file mutators', () => {
     const taken = [...makeMutators(), ...makeWrapperMutators()].map((m) => m.id);
     expect(makeScriptMutators().every((m) => !taken.includes(m.id))).toBe(true);
     expect(makeScriptMutators()).toHaveLength(4);
+  });
+});
+
+describe('launcher mutators', () => {
+  // The same honesty check on every intent: running the command from find or git only counts
+  // if the effect still happens.
+  const cases = makeIntents().flatMap((intent) =>
+    makeLauncherMutators().map((m) => [`${m.id} / ${intent.id}`, m, intent] as const),
+  );
+  it.each(cases)('%s still has the effect', (_name, mutator, intent) => {
+    const command = mutator.render(intent.binary, intent.args);
+    const { effective } = runAndCheck(command, intent.setup, intent.effectHappened);
+    expect(effective, `command was a no-op: ${command}`).toBe(true);
+  });
+
+  it('starts every command with find or git, the program an allowlist would name', () => {
+    for (const m of makeLauncherMutators()) {
+      expect(m.render('chmod', ['777', 'x']).split(' ')[0]).toMatch(/^(find|git)$/);
+    }
+  });
+
+  it('keeps find to the sandbox folder, so the command runs once and nowhere else', () => {
+    for (const m of makeLauncherMutators().filter((x) => x.id.startsWith('find'))) {
+      expect(m.render('chmod', ['777', 'x'])).toMatch(/^find \. -maxdepth 0 /);
+    }
+  });
+
+  it('is kept out of the other sets, so published scorecards do not move', () => {
+    const taken = [...makeMutators(), ...makeWrapperMutators(), ...makeScriptMutators()].map((m) => m.id);
+    expect(makeLauncherMutators().every((m) => !taken.includes(m.id))).toBe(true);
+    expect(makeLauncherMutators()).toHaveLength(4);
   });
 });
