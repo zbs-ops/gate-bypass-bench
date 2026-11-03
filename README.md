@@ -231,7 +231,7 @@ rule that judges the first word allows everything that word can start, so the al
 this repo holds only for allowlists of programs that can't run other programs.
 
 Codex is the partial exception. All three git-alias attacks run unattended, but the nine `find -exec`
-attacks go to a person. Codex 0.163.0 has no rule about `find -exec`. The likely reason is the one
+attacks go to a person. A search of Codex 0.163.0's source finds no rule about `-exec`. The likely reason is the one
 in the Codex section above: Codex splits a script into commands only when it's made of plain words,
 the `\;` that ends `-exec` isn't, so the whole line is matched as one `bash -lc` call that no rule
 allows. That's an inference from the source, not a measured cause: a `';'` spelling would test it,
