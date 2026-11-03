@@ -4,7 +4,7 @@
 >
 > **Approach:** rewrite forbidden commands in known bypass styles, run each in a sandbox, and count a bypass only when the forbidden effect really happened.
 >
-> **Proof:** real deny rules in Gemini CLI, OpenAI's Codex CLI and opencode were bypassed 84%, 78% and 84% of the time. The same engines used as allowlists: 0%. Put `timeout 5` in front and every deny rule misses all 12. Add `find` and `git` to Gemini CLI's allowlist and it misses all 12 too. 99 tests.
+> **Proof:** real deny rules in Gemini CLI, OpenAI's Codex CLI and opencode were bypassed 84%, 78% and 84% of the time. The same engines used as allowlists: 0%. Put `timeout 5` in front and every deny rule misses all 12. Add `find` and `git` to Gemini CLI's or opencode's allowlist and it misses all 12 too (Codex: 3 of 12). 99 tests.
 
 
 **How often can an AI agent's command gate be talked around?** This measures it.
@@ -214,18 +214,28 @@ with `!`, defined right on the command line with `git -c`. That's 12 more attack
 (`npm run bench -- --launchers`, separate set), and all 12 still do the damage in the sandbox.
 
 ```
-gate                                     bypass rate   (bypasses / effective)
-tokenized-denylist                             100%   (12/12)
-gemini-cli-deny-rule                           100%   (12/12)
-gemini-cli-allow-rule                            0%   (0/12)
-gemini-cli-allow-rule, plus find and git       100%   (12/12)
+gate                                    bypass rate   (bypasses / effective)
+tokenized-denylist                            100%   (12/12)
+gemini-cli / codex-cli / opencode deny        100%   (12/12 each)
+the three allow rules                           0%   (0/12 each)
+gemini-cli allow rule, plus find and git      100%   (12/12)
+opencode allow rule, plus find and git        100%   (12/12)
+codex-cli allow rule, plus find and git        25%   (3/12)
 ```
 
-That's Gemini CLI 0.65.0's real engine, with the allow rule from above and the same rule with `find`
-and `git` added ([allow-launchers.toml](study/gemini-cli/allow-launchers.toml)). A `commandPrefix`
-allow rule judges the first word, so allowing `find` allows everything `find` can start. The
-allowlist result in this repo holds only for allowlists of programs that can't run other programs.
-Codex CLI and opencode haven't been scored on this set yet.
+Each is the product's own code: Gemini CLI 0.65.0's engine, Codex CLI 0.163.0's rules check and
+opencode 1.19.4's permission code, with the allow config from above and the same config with `find`
+and `git` added ([Gemini](study/gemini-cli/allow-launchers.toml),
+[Codex](study/codex-cli/allow-launchers.rules), opencode adds `"find *"` and `"git *"`). An allow
+rule that judges the first word allows everything that word can start, so the allowlist result in
+this repo holds only for allowlists of programs that can't run other programs.
+
+Codex is the partial exception. All three git-alias attacks run unattended, but the nine `find -exec`
+attacks go to a person. Codex 0.163.0 has no rule about `find -exec`. The likely reason is the one
+in the Codex section above: Codex splits a script into commands only when it's made of plain words,
+the `\;` that ends `-exec` isn't, so the whole line is matched as one `bash -lc` call that no rule
+allows. That's an inference from the source, not a measured cause: a `';'` spelling would test it,
+and hasn't been run.
 
 ## When the hook itself misbehaves
 
