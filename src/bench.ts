@@ -1,6 +1,6 @@
 import { makeGates } from './gates.js';
 import { makeIntents } from './intents.js';
-import { makeMutators, makeScriptMutators, makeWrapperMutators } from './mutators.js';
+import { makeLauncherMutators, makeMutators, makeScriptMutators, makeWrapperMutators } from './mutators.js';
 import { runAndCheck } from './sandbox.js';
 import type { AsyncGate, Cell, GateScore, Intent, Mutator, Gate, Report } from './types.js';
 
@@ -136,5 +136,17 @@ export function scriptSet(): { intents: Intent[]; mutators: Mutator[] } {
   return {
     intents: makeIntents().map((intent) => ({ ...intent, equivalents: [] })),
     mutators: makeScriptMutators(),
+  };
+}
+
+/**
+ * The launcher set: every intent run from `find -exec`, `find -execdir`, or a `git -c` alias,
+ * the techniques in `makeLauncherMutators`. Equivalents are left out, as in the other extended
+ * sets, so each attack is counted once.
+ */
+export function launcherSet(): { intents: Intent[]; mutators: Mutator[] } {
+  return {
+    intents: makeIntents().map((intent) => ({ ...intent, equivalents: [] })),
+    mutators: makeLauncherMutators(),
   };
 }

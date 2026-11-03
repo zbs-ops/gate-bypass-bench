@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { runBench, scriptSet, wrapperSet } from '../src/bench.js';
+import { launcherSet, runBench, scriptSet, wrapperSet } from '../src/bench.js';
 
 const score = (gate: string) => {
   const report = runBench();
@@ -83,5 +83,33 @@ describe('the script-file set', () => {
     // A command-line parser can't see into a file: the tokenized denylist misses all 12.
     expect(score('tokenized-denylist')?.bypasses).toBe(12);
     expect(score('allowlist')?.bypasses).toBe(0);
+  });
+});
+
+describe('the launcher set', () => {
+  it('runs 12 attacks, all effective, and leaves the original 45 alone', () => {
+    const extended = runBench(launcherSet());
+    const cells = extended.cells.filter((c) => c.gate === 'allowlist');
+    expect(cells).toHaveLength(12);
+    expect(cells.every((c) => c.effective)).toBe(true);
+    expect(runBench().cells.filter((c) => c.gate === 'allowlist' && c.effective)).toHaveLength(45);
+  });
+
+  it('the built-in allowlist holds, because it names neither find nor git', () => {
+    const score = runBench(launcherSet()).scores.find((s) => s.gate === 'allowlist');
+    expect(score?.bypasses).toBe(0);
+  });
+
+  it('an allowlist that names find and git by first word lets all 12 through', () => {
+    // What a prefix allow rule does: judge the first word, nothing after it.
+    const firstWord = {
+      id: 'first-word-allowlist',
+      describe: 'ALLOW if the first word is echo, ls, true, pwd, find or git',
+      decide: (command: string) =>
+        ['echo', 'ls', 'true', 'pwd', 'find', 'git'].includes(command.trim().split(/\s+/)[0] ?? '') ? 'ALLOW' : 'DENY',
+    } as const;
+    const report = runBench({ ...launcherSet(), gates: [firstWord] });
+    expect(report.scores[0]?.bypasses).toBe(12);
+    expect(report.scores[0]?.effectiveCommands).toBe(12);
   });
 });
