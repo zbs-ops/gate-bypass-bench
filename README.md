@@ -4,7 +4,7 @@
 >
 > **Approach:** rewrite forbidden commands in known bypass styles, run each in a sandbox, and count a bypass only when the forbidden effect really happened.
 >
-> **Proof:** real deny rules in Gemini CLI, OpenAI's Codex CLI and opencode were bypassed 84%, 78% and 84% of the time. The same engines used as allowlists: 0%. Put `timeout 5` in front and every deny rule misses all 12. Allow `find` or `git` and an allowlist misses all 12 too. 99 tests.
+> **Proof:** real deny rules in Gemini CLI, OpenAI's Codex CLI and opencode were bypassed 84%, 78% and 84% of the time. The same engines used as allowlists: 0%. Put `timeout 5` in front and every deny rule misses all 12. Add `find` and `git` to Gemini CLI's allowlist and it misses all 12 too. 99 tests.
 
 
 **How often can an AI agent's command gate be talked around?** This measures it.
