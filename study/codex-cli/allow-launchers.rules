@@ -1,0 +1,6 @@
+# The allowlist version with find and git added, as people do because agents use both all day.
+# Both can run any other program (find -exec, a git alias starting with !).
+prefix_rule(
+    pattern = [["echo", "ls", "true", "pwd", "find", "git"]],
+    decision = "allow",
+)
