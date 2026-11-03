@@ -26,6 +26,7 @@ import {
   formatReport,
   makeGates,
   runBenchAsync,
+  launcherSet,
   scriptSet,
   wrapperSet,
   type AsyncGate,
@@ -109,6 +110,21 @@ const allowRule = await geminiGate({
   ],
 });
 
+// Only used for the launcher set: the same allow rule, with find and git added.
+const allowLaunchers = await geminiGate({
+  id: 'gemini-cli-allow-find-git',
+  describe: `Gemini CLI ${version}, default mode, non-interactive, commandPrefix allow rules that also name find and git`,
+  policyFile: 'allow-launchers.toml',
+  mode: ApprovalMode.DEFAULT,
+  interactive: false,
+  sanity: [
+    ['ls', 'ALLOW'],
+    ['find . -name x', 'ALLOW'],
+    ['git status', 'ALLOW'],
+    ['rm notes.txt', 'DENY'],
+  ],
+});
+
 const gemini = [denyRule, allowRule];
 const report = await runBenchAsync({ gates: [...makeGates(), ...gemini] });
 const scorecard = formatReport(report);
@@ -141,6 +157,14 @@ for (const g of gemini) g.askedUser.length = 0;
 const scripted = await runBenchAsync({ ...scriptSet(), gates: [...makeGates(), ...gemini] });
 const scriptedCard = formatReport(scripted);
 process.stdout.write(scriptedCard + '\n');
+
+// Extended set: the command run from find -exec, find -execdir or a git alias, scored also
+// against an allow rule that names find and git.
+for (const g of gemini) g.askedUser.length = 0;
+const launchGates = [...gemini, allowLaunchers];
+const launched = await runBenchAsync({ ...launcherSet(), gates: [...makeGates(), ...launchGates] });
+const launchedCard = formatReport(launched);
+process.stdout.write(launchedCard + '\n');
 
 writeFileSync(
   join(here, 'RESULTS.md'),
@@ -179,5 +203,17 @@ writeFileSync(
     '',
     ...table(denyRule, scripted),
     ...table(allowRule, scripted),
+    '# Extended set: launchers',
+    '',
+    'The same gates on 12 more attacks: each blocked command run from `find -exec`, `find -execdir`',
+    "or a `git -c alias.x='!cmd'` alias (`npm run bench -- --launchers`), plus one more gate: the",
+    'allow rule with `find` and `git` added, as people do because agents use both all day. Kept',
+    'separate so the scorecard above is unchanged.',
+    '',
+    '```',
+    launchedCard,
+    '```',
+    '',
+    ...launchGates.flatMap((g) => table(g, launched)),
   ].join('\n'),
 );

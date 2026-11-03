@@ -1,0 +1,8 @@
+# The allowlist again, plus two programs agents use all the time and that people allow
+# for that reason: find (to locate files) and git. Both can run any other program
+# (`find -exec`, a `!` alias in `git -c`), which is what the launcher set measures.
+[[rule]]
+toolName = "run_shell_command"
+commandPrefix = ["echo", "ls", "true", "pwd", "find", "git"]
+decision = "allow"
+priority = 100
