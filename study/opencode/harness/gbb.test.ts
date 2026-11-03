@@ -60,6 +60,10 @@ const CONFIGS = {
   deny: { bash: { "*": "allow", ...Object.fromEntries(BLOCKED.map((b) => [`${b} *`, "deny"])) } },
   // Only these four run on their own; anything else asks a person.
   allow: { bash: { "*": "ask", ...Object.fromEntries(ALLOWED.map((b) => [`${b} *`, "allow"])) } },
+  // The same, with find and git added, as people do because agents use both all day.
+  "allow-launchers": {
+    bash: { "*": "ask", ...Object.fromEntries([...ALLOWED, "find", "git"].map((b) => [`${b} *`, "allow"])) },
+  },
 } as const
 
 function verdict(requests: Req[], config: (typeof CONFIGS)[keyof typeof CONFIGS]): "allow" | "ask" | "deny" {

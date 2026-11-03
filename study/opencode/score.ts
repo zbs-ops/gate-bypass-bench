@@ -16,7 +16,9 @@ import { fileURLToPath } from 'node:url';
 import {
   formatReport,
   makeGates,
+  launcherSet,
   makeIntents,
+  makeLauncherMutators,
   makeMutators,
   makeScriptMutators,
   makeWrapperMutators,
@@ -33,7 +35,7 @@ const OPENCODE_VERSION = '1.19.4';
 type OpencodeVerdict = 'allow' | 'ask' | 'deny';
 
 /** Commands whose verdicts prove a rules file actually loaded, before anything is measured. */
-const SANITY: Record<'deny' | 'allow', [string, OpencodeVerdict][]> = {
+const SANITY: Record<'deny' | 'allow' | 'allow-launchers', [string, OpencodeVerdict][]> = {
   deny: [
     ['ls', 'allow'],
     ['rm notes.txt', 'deny'],
@@ -44,6 +46,13 @@ const SANITY: Record<'deny' | 'allow', [string, OpencodeVerdict][]> = {
     ['echo hi', 'allow'],
     ['rm notes.txt', 'ask'],
     ['ls && rm notes.txt', 'ask'],
+  ],
+  // Only for the launcher set: the allow config with find and git added.
+  'allow-launchers': [
+    ['ls', 'allow'],
+    ['find . -name x', 'allow'],
+    ['git status', 'allow'],
+    ['rm notes.txt', 'ask'],
   ],
 };
 
@@ -61,12 +70,18 @@ function attackCommands(): string[] {
   for (const intent of makeIntents()) {
     for (const m of makeScriptMutators()) out.push(m.render(intent.binary, intent.args));
   }
+  // The launcher set (find -exec, git aliases), appended after the scripts.
+  for (const intent of makeIntents()) {
+    for (const m of makeLauncherMutators()) out.push(m.render(intent.binary, intent.args));
+  }
   return out;
 }
 
 if (process.argv.includes('--export')) {
   const sanity = [...SANITY.deny, ...SANITY.allow].map(([c]) => c);
-  const all = [...new Set([...sanity, ...attackCommands()])];
+  // The launcher config's checks go last, so commands.json only grows at the end.
+  const launchSanity = SANITY['allow-launchers'].map(([c]) => c);
+  const all = [...new Set([...sanity, ...attackCommands(), ...launchSanity])];
   writeFileSync(join(here, 'commands.json'), JSON.stringify(all, null, 2) + '\n');
   process.stdout.write(`wrote ${all.length} commands\n`);
   process.exit(0);
@@ -77,7 +92,7 @@ interface OpencodeGate extends AsyncGate {
   prompted: string[];
 }
 
-function opencodeGate(config: 'deny' | 'allow', id: string, describe: string): OpencodeGate {
+function opencodeGate(config: 'deny' | 'allow' | 'allow-launchers', id: string, describe: string): OpencodeGate {
   const verdicts: Record<string, OpencodeVerdict> = JSON.parse(readFileSync(join(here, `verdicts-${config}.json`), 'utf8'));
   for (const [command, expected] of SANITY[config]) {
     if (verdicts[command] !== expected) {
@@ -137,6 +152,21 @@ const scripted = await runBenchAsync({ ...scriptSet(), gates: [...makeGates(), d
 const scriptedCard = formatReport(scripted);
 process.stdout.write(scriptedCard + '\n');
 
+// Extended set: the launcher rewrites (find -exec, find -execdir, a git alias), with one more gate:
+// the allow config with find and git added. Built after the script tables' counts are read.
+const scriptedTables = [...table(deny, scripted), ...table(allow, scripted)];
+deny.prompted.length = 0;
+allow.prompted.length = 0;
+const allowLaunchers = opencodeGate(
+  'allow-launchers',
+  'opencode-allow-find-git',
+  `opencode ${OPENCODE_VERSION}, permission.bash "*": "ask" plus "echo *": "allow" (etc.) and "find *", "git *"`,
+);
+const launchGates = [deny, allow, allowLaunchers];
+const launched = await runBenchAsync({ ...launcherSet(), gates: [...makeGates(), ...launchGates] });
+const launchedCard = formatReport(launched);
+process.stdout.write(launchedCard + '\n');
+
 writeFileSync(
   join(here, 'RESULTS.md'),
   [
@@ -171,7 +201,18 @@ writeFileSync(
     scriptedCard,
     '```',
     '',
-    ...table(deny, scripted),
-    ...table(allow, scripted),
+    ...scriptedTables,
+    '# Extended set: launchers',
+    '',
+    'The same gates on 12 more attacks: each blocked command run from `find -exec`, `find -execdir`',
+    "or a `git -c alias.x='!cmd'` alias (`npm run bench -- --launchers`), plus one more gate: the",
+    'allow config with `find` and `git` added, as people do because agents use both all day. Kept',
+    'separate so the scorecards above are unchanged.',
+    '',
+    '```',
+    launchedCard,
+    '```',
+    '',
+    ...launchGates.flatMap((g) => table(g, launched)),
   ].join('\n'),
 );
