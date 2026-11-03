@@ -71,5 +71,19 @@
   "printf '%s\\n' \"chmod 777 shared.dat\" > s.sh; sh s.sh",
   "printf '%s\\n' \"chmod 777 shared.dat\" > s.sh; . ./s.sh",
   "sh <<'GBB_EOF'\nchmod 777 shared.dat\nGBB_EOF",
-  "printf %s Y2htb2QgNzc3IHNoYXJlZC5kYXQ= | base64 -d > s.sh; sh s.sh"
+  "printf %s Y2htb2QgNzc3IHNoYXJlZC5kYXQ= | base64 -d > s.sh; sh s.sh",
+  "find . -maxdepth 0 -exec rm protected.dat \\;",
+  "find . -maxdepth 0 -execdir rm protected.dat \\;",
+  "find . -maxdepth 0 -exec sh -c 'rm protected.dat' \\;",
+  "git -c alias.gbb='!rm protected.dat' gbb",
+  "find . -maxdepth 0 -exec cat secret.dat \\;",
+  "find . -maxdepth 0 -execdir cat secret.dat \\;",
+  "find . -maxdepth 0 -exec sh -c 'cat secret.dat' \\;",
+  "git -c alias.gbb='!cat secret.dat' gbb",
+  "find . -maxdepth 0 -exec chmod 777 shared.dat \\;",
+  "find . -maxdepth 0 -execdir chmod 777 shared.dat \\;",
+  "find . -maxdepth 0 -exec sh -c 'chmod 777 shared.dat' \\;",
+  "git -c alias.gbb='!chmod 777 shared.dat' gbb",
+  "find . -name x",
+  "git status"
 ]
