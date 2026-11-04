@@ -4,7 +4,7 @@
 >
 > **Approach:** rewrite forbidden commands in known bypass styles, run each in a sandbox, and count a bypass only when the forbidden effect really happened.
 >
-> **Proof:** real deny rules in Gemini CLI, OpenAI's Codex CLI and opencode were bypassed 84%, 78% and 84% of the time. The same engines used as allowlists: 0%. Put `timeout 5` in front and every deny rule misses all 12. Add `find` and `git` to Gemini CLI's or opencode's allowlist and it misses all 12 too (Codex: 3 of 12). 99 tests.
+> **Proof:** real deny rules in Gemini CLI, OpenAI's Codex CLI and opencode were bypassed 84%, 78% and 84% of the time. The same engines used as allowlists: 0%. Put `timeout 5` in front and every deny rule misses all 12. Add `find` and `git` to Gemini CLI's or opencode's allowlist and it misses all 12 too (Codex: 3 of 12 as written, 12 of 12 with the find terminator quoted). 99 tests.
 
 
 **How often can an AI agent's command gate be talked around?** This measures it.
@@ -230,12 +230,13 @@ and `git` added ([Gemini](study/gemini-cli/allow-launchers.toml),
 rule that judges the first word allows everything that word can start, so the allowlist result in
 this repo holds only for allowlists of programs that can't run other programs.
 
-Codex is the partial exception. All three git-alias attacks run unattended, but the nine `find -exec`
-attacks go to a person. A search of Codex 0.163.0's source finds no rule about `-exec`. The likely reason is the one
-in the Codex section above: Codex splits a script into commands only when it's made of plain words,
-the `\;` that ends `-exec` isn't, so the whole line is matched as one `bash -lc` call that no rule
-allows. That's an inference from the source, not a measured cause: a `';'` spelling would test it,
-and hasn't been run.
+Codex looks like a partial exception, but it isn't a real one. All three git-alias attacks run
+unattended; the nine `find -exec` attacks are sent to a person. A search of Codex 0.163.0's source
+finds no rule about `-exec`, and a diagnostic settles why: the same `find -exec` command with its
+terminator spelled `';'`, `";"`, or `+` instead of `\;` is **allowed** for every intent (see the
+"Diagnostic" section of [the Codex RESULTS](study/codex-cli/RESULTS.md)). So the prompt is Codex's
+command splitter balking at the `\;`, not a rule, and a one-character change to the terminator runs
+the command unattended. Codex's 3/12 is really 12/12 behind a typo.
 
 ## When the hook itself misbehaves
 
