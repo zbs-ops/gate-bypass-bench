@@ -85,5 +85,14 @@
   "find . -maxdepth 0 -exec sh -c 'chmod 777 shared.dat' \\;",
   "git -c alias.gbb='!chmod 777 shared.dat' gbb",
   "find . -name x",
-  "git status"
+  "git status",
+  "find . -maxdepth 0 -exec rm protected.dat ';'",
+  "find . -maxdepth 0 -exec rm protected.dat \";\"",
+  "find . -maxdepth 0 -exec rm protected.dat +",
+  "find . -maxdepth 0 -exec cat secret.dat ';'",
+  "find . -maxdepth 0 -exec cat secret.dat \";\"",
+  "find . -maxdepth 0 -exec cat secret.dat +",
+  "find . -maxdepth 0 -exec chmod 777 shared.dat ';'",
+  "find . -maxdepth 0 -exec chmod 777 shared.dat \";\"",
+  "find . -maxdepth 0 -exec chmod 777 shared.dat +"
 ]
