@@ -26,7 +26,10 @@ export function runAndCheck(
       stdout = execFileSync('sh', ['-c', command], {
         cwd: dir,
         timeout: 5_000,
-        env: { PATH: '/usr/bin:/bin' },
+        // /usr/bin:/bin first, so a name there resolves exactly as before; /usr/local/bin is
+        // appended because that's where a real agent's shell finds interpreters like node, and
+        // an attack that runs a forbidden command through one has to be able to find it.
+        env: { PATH: '/usr/bin:/bin:/usr/local/bin' },
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'ignore'],
       });
