@@ -196,3 +196,37 @@ export function makeLauncherMutators(): Mutator[] {
     },
   ];
 }
+
+/**
+ * Interpreters: a language runtime people allow because agents use it all day, which runs a
+ * shell command from a one-liner. `python3 -c`, `node -e` and `perl -e` each run the forbidden
+ * command through the language's system / exec call, so the forbidden binary is inside a string
+ * argument and the first word is the interpreter. An allowlist that names `python3`, `node` or
+ * `perl` by its first word lets all of these through, the same point the launcher set makes for
+ * `find` and `git`. (The core set's `awk-system` is the same idea for one more interpreter.)
+ *
+ * An attack only counts where its interpreter is installed and the command actually runs, so a
+ * box without one of these three simply drops those renders from the denominator.
+ *
+ * Kept apart from `makeMutators()`, like the other extended sets, so the published scorecards
+ * stay exactly as they were.
+ */
+export function makeInterpreterMutators(): Mutator[] {
+  return [
+    {
+      id: 'python-c',
+      describe: 'Run the command from python3 -c via os.system',
+      render: (b, a) => `python3 -c 'import os; os.system("${join(b, a)}")'`,
+    },
+    {
+      id: 'node-e',
+      describe: 'Run the command from node -e via child_process',
+      render: (b, a) => `node -e 'require("child_process").execSync("${join(b, a)}", {stdio: "inherit"})'`,
+    },
+    {
+      id: 'perl-e',
+      describe: 'Run the command from perl -e via system',
+      render: (b, a) => `perl -e 'system("${join(b, a)}")'`,
+    },
+  ];
+}
