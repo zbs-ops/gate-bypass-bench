@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { launcherSet, runBench, scriptSet, wrapperSet } from '../src/bench.js';
+import { interpreterSet, launcherSet, runBench, scriptSet, wrapperSet } from '../src/bench.js';
 
 const score = (gate: string) => {
   const report = runBench();
@@ -111,5 +111,31 @@ describe('the launcher set', () => {
     const report = runBench({ ...launcherSet(), gates: [firstWord] });
     expect(report.scores[0]?.bypasses).toBe(12);
     expect(report.scores[0]?.effectiveCommands).toBe(12);
+  });
+});
+
+describe('the interpreter set', () => {
+  it('leaves the original 45 alone', () => {
+    expect(runBench().cells.filter((c) => c.gate === 'allowlist' && c.effective)).toHaveLength(45);
+  });
+
+  it('the built-in allowlist holds, because it names no interpreter', () => {
+    const score = runBench(interpreterSet()).scores.find((s) => s.gate === 'allowlist');
+    expect(score?.bypasses).toBe(0);
+  });
+
+  it('an allowlist that names python3, node and perl by first word lets every effective one through', () => {
+    const firstWord = {
+      id: 'first-word-allowlist',
+      describe: 'ALLOW if the first word is echo, ls, true, pwd, python3, node or perl',
+      decide: (command: string) =>
+        ['echo', 'ls', 'true', 'pwd', 'python3', 'node', 'perl'].includes(command.trim().split(/\s+/)[0] ?? '')
+          ? 'ALLOW'
+          : 'DENY',
+    } as const;
+    const report = runBench({ ...interpreterSet(), gates: [firstWord] });
+    // At least perl is on a standard Linux box, so some are effective, and all of those get through.
+    expect(report.scores[0]?.effectiveCommands).toBeGreaterThan(0);
+    expect(report.scores[0]?.bypasses).toBe(report.scores[0]?.effectiveCommands);
   });
 });

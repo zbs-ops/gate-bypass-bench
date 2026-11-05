@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
 import { makeIntents } from '../src/intents.js';
-import { makeLauncherMutators, makeMutators, makeScriptMutators, makeWrapperMutators } from '../src/mutators.js';
+import { makeInterpreterMutators, makeLauncherMutators, makeMutators, makeScriptMutators, makeWrapperMutators } from '../src/mutators.js';
 import { runAndCheck } from '../src/sandbox.js';
 
 const deleteIntent = () => {
@@ -107,5 +108,42 @@ describe('launcher mutators', () => {
     const taken = [...makeMutators(), ...makeWrapperMutators(), ...makeScriptMutators()].map((m) => m.id);
     expect(makeLauncherMutators().every((m) => !taken.includes(m.id))).toBe(true);
     expect(makeLauncherMutators()).toHaveLength(4);
+  });
+});
+
+describe('interpreter mutators', () => {
+  const available = (bin: string): boolean => {
+    try {
+      execFileSync('sh', ['-c', `command -v ${bin}`], { stdio: 'ignore' });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  // The honesty check, only where the interpreter is installed: a box without one simply drops
+  // those renders, the same way the benchmark's effective-only denominator does.
+  const cases = makeIntents().flatMap((intent) =>
+    makeInterpreterMutators().map((m) => [`${m.id} / ${intent.id}`, m, intent] as const),
+  );
+  it.each(cases)('%s has the effect where its interpreter is installed', (_name, mutator, intent) => {
+    const bin = mutator.render('x', []).split(' ')[0] ?? '';
+    if (!available(bin)) return;
+    const command = mutator.render(intent.binary, intent.args);
+    const { effective } = runAndCheck(command, intent.setup, intent.effectHappened);
+    expect(effective, `command was a no-op: ${command}`).toBe(true);
+  });
+
+  it('starts every command with an interpreter an allowlist would name', () => {
+    for (const m of makeInterpreterMutators()) {
+      expect(m.render('chmod', ['777', 'x']).split(' ')[0]).toMatch(/^(python3|node|perl)$/);
+    }
+  });
+
+  it('is kept out of the other sets, so published scorecards do not move', () => {
+    const taken = [...makeMutators(), ...makeWrapperMutators(), ...makeScriptMutators(), ...makeLauncherMutators()].map(
+      (m) => m.id,
+    );
+    expect(makeInterpreterMutators().every((m) => !taken.includes(m.id))).toBe(true);
+    expect(makeInterpreterMutators()).toHaveLength(3);
   });
 });
