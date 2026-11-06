@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { makeIntents } from '../src/intents.js';
-import { makeInterpreterMutators, makeLauncherMutators, makeMutators, makeScriptMutators, makeWrapperMutators } from '../src/mutators.js';
+import {
+  makeInterpreterMutators,
+  makeLauncherMutators,
+  makeMutators,
+  makeScriptMutators,
+  makeUtilityMutators,
+  makeWrapperMutators,
+} from '../src/mutators.js';
 import { runAndCheck } from '../src/sandbox.js';
 
 const deleteIntent = () => {
@@ -145,5 +152,46 @@ describe('interpreter mutators', () => {
     );
     expect(makeInterpreterMutators().every((m) => !taken.includes(m.id))).toBe(true);
     expect(makeInterpreterMutators()).toHaveLength(3);
+  });
+});
+
+describe('utility mutators', () => {
+  const available = (bin: string): boolean => {
+    try {
+      execFileSync('sh', ['-c', `command -v ${bin}`], { stdio: 'ignore' });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  const cases = makeIntents().flatMap((intent) =>
+    makeUtilityMutators().map((m) => [`${m.id} / ${intent.id}`, m, intent] as const),
+  );
+  // Where the program is installed (GNU sed and tar on any Linux box, make where it's there), the
+  // command must really have the effect, or the set would be counting no-ops.
+  it.each(cases)('%s has the effect where its program is installed', (_name, mutator, intent) => {
+    const bin = mutator.render('x', []).split(' ')[0] ?? '';
+    if (!available(bin)) return;
+    const command = mutator.render(intent.binary, intent.args);
+    const { effective } = runAndCheck(command, intent.setup, intent.effectHappened);
+    expect(effective, `command was a no-op: ${command}`).toBe(true);
+  });
+
+  it('starts every command with sed, tar or make', () => {
+    for (const m of makeUtilityMutators()) {
+      expect(m.render('chmod', ['777', 'x']).split(' ')[0]).toMatch(/^(sed|tar|make)$/);
+    }
+  });
+
+  it('is kept out of the other sets, so published scorecards do not move', () => {
+    const taken = [
+      ...makeMutators(),
+      ...makeWrapperMutators(),
+      ...makeScriptMutators(),
+      ...makeLauncherMutators(),
+      ...makeInterpreterMutators(),
+    ].map((m) => m.id);
+    expect(makeUtilityMutators().every((m) => !taken.includes(m.id))).toBe(true);
+    expect(makeUtilityMutators()).toHaveLength(3);
   });
 });

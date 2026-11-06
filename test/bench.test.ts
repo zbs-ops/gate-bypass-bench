@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { interpreterSet, launcherSet, runBench, scriptSet, wrapperSet } from '../src/bench.js';
+import { interpreterSet, launcherSet, runBench, scriptSet, utilitySet, wrapperSet } from '../src/bench.js';
 
 const score = (gate: string) => {
   const report = runBench();
@@ -136,6 +136,38 @@ describe('the interpreter set', () => {
     const report = runBench({ ...interpreterSet(), gates: [firstWord] });
     // At least perl is on a standard Linux box, so some are effective, and all of those get through.
     expect(report.scores[0]?.effectiveCommands).toBeGreaterThan(0);
+    expect(report.scores[0]?.bypasses).toBe(report.scores[0]?.effectiveCommands);
+  });
+});
+
+describe('the utility set', () => {
+  it('leaves the original 45 alone', () => {
+    expect(runBench().cells.filter((c) => c.gate === 'allowlist' && c.effective)).toHaveLength(45);
+  });
+
+  it('the built-in allowlist holds, because it names none of sed, tar or make', () => {
+    const score = runBench(utilitySet()).scores.find((s) => s.gate === 'allowlist');
+    expect(score?.bypasses).toBe(0);
+  });
+
+  it('GNU sed and tar alone give 6 effective attacks on any Linux box', () => {
+    const effective = runBench(utilitySet()).cells.filter(
+      (c) => c.gate === 'allowlist' && c.effective && c.mutator !== 'make-eval',
+    );
+    expect(effective).toHaveLength(6);
+  });
+
+  it('an allowlist that names sed, tar and make by first word lets every effective one through', () => {
+    const firstWord = {
+      id: 'first-word-allowlist',
+      describe: 'ALLOW if the first word is echo, ls, true, pwd, sed, tar or make',
+      decide: (command: string) =>
+        ['echo', 'ls', 'true', 'pwd', 'sed', 'tar', 'make'].includes(command.trim().split(/\s+/)[0] ?? '')
+          ? 'ALLOW'
+          : 'DENY',
+    } as const;
+    const report = runBench({ ...utilitySet(), gates: [firstWord] });
+    expect(report.scores[0]?.effectiveCommands).toBeGreaterThanOrEqual(6);
     expect(report.scores[0]?.bypasses).toBe(report.scores[0]?.effectiveCommands);
   });
 });
