@@ -1,6 +1,6 @@
 import { makeGates } from './gates.js';
 import { makeIntents } from './intents.js';
-import { makeInterpreterMutators, makeLauncherMutators, makeMutators, makeScriptMutators, makeWrapperMutators } from './mutators.js';
+import { makeInterpreterMutators, makeLauncherMutators, makeUtilityMutators, makeMutators, makeScriptMutators, makeWrapperMutators } from './mutators.js';
 import { runAndCheck } from './sandbox.js';
 import type { AsyncGate, Cell, GateScore, Intent, Mutator, Gate, Report } from './types.js';
 
@@ -160,5 +160,17 @@ export function interpreterSet(): { intents: Intent[]; mutators: Mutator[] } {
   return {
     intents: makeIntents().map((intent) => ({ ...intent, equivalents: [] })),
     mutators: makeInterpreterMutators(),
+  };
+}
+
+/**
+ * The utility set: every intent run from GNU `sed`'s `e` command, a GNU `tar` checkpoint action,
+ * or a rule defined with `make --eval`, the techniques in `makeUtilityMutators`. Equivalents are
+ * left out, as in the other extended sets, so each attack is counted once.
+ */
+export function utilitySet(): { intents: Intent[]; mutators: Mutator[] } {
+  return {
+    intents: makeIntents().map((intent) => ({ ...intent, equivalents: [] })),
+    mutators: makeUtilityMutators(),
   };
 }
