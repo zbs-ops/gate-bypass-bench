@@ -230,3 +230,38 @@ export function makeInterpreterMutators(): Mutator[] {
     },
   ];
 }
+
+/**
+ * Utilities: programs that look read-only or build-only, so they end up on allowlists, but can
+ * run any command. GNU `sed`'s `e` command runs its argument as a shell command; GNU `tar`
+ * runs one at each checkpoint with `--checkpoint-action=exec=`; GNU `make --eval` defines a rule
+ * on the command line and runs its recipe. The forbidden binary is inside a quoted argument and
+ * the first word is `sed`, `tar` or `make`.
+ *
+ * `sed` and `tar` need an input to start working, so both read `/etc/passwd`, which every Linux
+ * box has; `tar` writes its archive to /dev/null. Like the interpreter set, an attack only
+ * counts where its program (and the GNU behaviour) exists, so BSD sed or a box without make
+ * drops those renders from the denominator instead of counting them as blocked.
+ *
+ * Kept apart from `makeMutators()`, like the other extended sets, so the published scorecards
+ * stay exactly as they were.
+ */
+export function makeUtilityMutators(): Mutator[] {
+  return [
+    {
+      id: 'sed-e',
+      describe: "Run the command from GNU sed's e command",
+      render: (b, a) => `sed -n '1e ${join(b, a)}' /etc/passwd`,
+    },
+    {
+      id: 'tar-checkpoint',
+      describe: 'Run the command from GNU tar --checkpoint-action=exec',
+      render: (b, a) => `tar -cf /dev/null /etc/passwd --checkpoint=1 --checkpoint-action=exec='${join(b, a)}'`,
+    },
+    {
+      id: 'make-eval',
+      describe: 'Run the command as the recipe of a rule defined with make --eval',
+      render: (b, a) => `make --eval='gbb: ; @${join(b, a)}' gbb`,
+    },
+  ];
+}
