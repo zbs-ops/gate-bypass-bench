@@ -287,6 +287,23 @@ get through. A test builds the last gate and checks every effective attack gets 
 behaviour; on BSD sed or a box without `make` they don't run, so they drop out of the denominator
 instead of counting as blocked.
 
+### Options: past a gate that blocks `-c` and `-e`
+
+A common refinement is to allow `git`, `node` and `python3` but refuse their obvious inline-code
+flags (`python3 -c`, `node -e`, `node -p`). That stops the interpreter set above. It doesn't stop
+the same programs running a command through another option:
+
+- `git ls-remote --upload-pack='rm protected.dat; :' .` (git runs the upload-pack through a shell, locally, for a local path)
+- `node --import 'data:text/javascript,...execSync("rm protected.dat")' /dev/null`
+- `python3 -m timeit -n 1 -r 1 -s 'import os' 'os.system("rm protected.dat")'`
+
+`npm run bench -- --options` runs all three intents through each. git's upload-pack writes to git,
+not to the terminal, so the secret read can't show its output and drops out; that leaves 8
+attacks where all three programs are installed (CI prints the scorecard) and 5 on a box without
+`python3`. Two tests build the flag-aware allowlist: it blocks every effective interpreter-set
+attack, and lets every effective option attack through. Blocking flags one by one is still a
+deny-list.
+
 ## When the hook itself misbehaves
 
 An allowlist only protects you if the agent enforces its answer. Gemini CLI and Codex both let
