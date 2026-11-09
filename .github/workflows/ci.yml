@@ -20,6 +20,7 @@ jobs:
       - run: npm run build
       - run: npm run bench
       - run: npm run bench -- --utilities
+      - run: npm run bench -- --options
 
   # Re-runs the Gemini CLI study and fails if the committed RESULTS.md no longer matches.
   gemini-cli-study:
