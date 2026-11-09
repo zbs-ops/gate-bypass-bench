@@ -5,6 +5,7 @@ import {
   makeInterpreterMutators,
   makeLauncherMutators,
   makeMutators,
+  makeOptionMutators,
   makeScriptMutators,
   makeUtilityMutators,
   makeWrapperMutators,
@@ -193,5 +194,56 @@ describe('utility mutators', () => {
     ].map((m) => m.id);
     expect(makeUtilityMutators().every((m) => !taken.includes(m.id))).toBe(true);
     expect(makeUtilityMutators()).toHaveLength(3);
+  });
+});
+
+describe('option mutators', () => {
+  const available = (bin: string): boolean => {
+    try {
+      execFileSync('sh', ['-c', `command -v ${bin}`], { stdio: 'ignore' });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  const cases = makeIntents().flatMap((intent) =>
+    makeOptionMutators().map((m) => [`${m.id} / ${intent.id}`, m, intent] as const),
+  );
+  // git's upload-pack writes to git, not to the terminal, so a read-only command can't show
+  // its output; that one attack is expected to drop out. Every other pair must really work
+  // wherever its program is installed.
+  it.each(cases)('%s has the effect where its program is installed', (_name, mutator, intent) => {
+    const bin = mutator.render('x', []).split(' ')[0] ?? '';
+    if (!available(bin)) return;
+    if (mutator.id === 'git-upload-pack' && intent.id === 'read-secret') return;
+    const command = mutator.render(intent.binary, intent.args);
+    const { effective } = runAndCheck(command, intent.setup, intent.effectHappened);
+    expect(effective, `command was a no-op: ${command}`).toBe(true);
+  });
+
+  it('starts every command with git, node or python3', () => {
+    for (const m of makeOptionMutators()) {
+      expect(m.render('chmod', ['777', 'x']).split(' ')[0]).toMatch(/^(git|node|python3)$/);
+    }
+  });
+
+  it('uses no inline-code flag (-c, -e, -p, --eval, --print)', () => {
+    for (const m of makeOptionMutators()) {
+      const words = m.render('chmod', ['777', 'x']).split(' ');
+      expect(words.some((w) => ['-c', '-e', '-p', '--eval', '--print'].includes(w))).toBe(false);
+    }
+  });
+
+  it('is kept out of the other sets, so published scorecards do not move', () => {
+    const taken = [
+      ...makeMutators(),
+      ...makeWrapperMutators(),
+      ...makeScriptMutators(),
+      ...makeLauncherMutators(),
+      ...makeInterpreterMutators(),
+      ...makeUtilityMutators(),
+    ].map((m) => m.id);
+    expect(makeOptionMutators().every((m) => !taken.includes(m.id))).toBe(true);
+    expect(makeOptionMutators()).toHaveLength(3);
   });
 });

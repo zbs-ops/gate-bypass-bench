@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { interpreterSet, launcherSet, runBench, scriptSet, utilitySet, wrapperSet } from '../src/bench.js';
+import { interpreterSet, launcherSet, optionSet, runBench, scriptSet, utilitySet, wrapperSet } from '../src/bench.js';
 
 const score = (gate: string) => {
   const report = runBench();
@@ -168,6 +168,43 @@ describe('the utility set', () => {
     } as const;
     const report = runBench({ ...utilitySet(), gates: [firstWord] });
     expect(report.scores[0]?.effectiveCommands).toBeGreaterThanOrEqual(6);
+    expect(report.scores[0]?.bypasses).toBe(report.scores[0]?.effectiveCommands);
+  });
+});
+
+describe('the option set', () => {
+  // An allowlist that names git, node and python3 by first word but refuses the obvious
+  // inline-code flags, the way several real gates do.
+  const flagAware = {
+    id: 'allowlist-minus-inline-flags',
+    describe: 'ALLOW echo, ls, true, pwd, git, node, python3 by first word, unless an inline-code flag appears',
+    decide: (command: string) => {
+      const words = command.trim().split(/\s+/);
+      const first = words[0] ?? '';
+      if (!['echo', 'ls', 'true', 'pwd', 'git', 'node', 'python3'].includes(first)) return 'DENY';
+      return words.some((w) => ['-c', '-e', '-p', '--eval', '--print'].includes(w)) ? 'DENY' : 'ALLOW';
+    },
+  } as const;
+
+  it('leaves the original 45 alone', () => {
+    expect(runBench().cells.filter((c) => c.gate === 'allowlist' && c.effective)).toHaveLength(45);
+  });
+
+  it('the built-in allowlist holds, because it names none of git, node or python3', () => {
+    const score = runBench(optionSet()).scores.find((s) => s.gate === 'allowlist');
+    expect(score?.bypasses).toBe(0);
+  });
+
+  it('a gate that blocks inline-code flags stops the interpreter set where it runs', () => {
+    const report = runBench({ ...interpreterSet(), gates: [flagAware] });
+    expect(report.scores[0]?.effectiveCommands).toBeGreaterThan(0);
+    expect(report.scores[0]?.bypasses).toBe(0);
+  });
+
+  it('the same gate lets every effective option attack through', () => {
+    const report = runBench({ ...optionSet(), gates: [flagAware] });
+    // git (delete, chmod) and node (all three) are on any machine this runs on; python3 adds 3.
+    expect(report.scores[0]?.effectiveCommands).toBeGreaterThanOrEqual(5);
     expect(report.scores[0]?.bypasses).toBe(report.scores[0]?.effectiveCommands);
   });
 });
