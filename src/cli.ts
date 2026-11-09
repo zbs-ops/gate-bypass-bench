@@ -1,4 +1,4 @@
-import { interpreterSet, launcherSet, runBench, scriptSet, utilitySet, wrapperSet } from './bench.js';
+import { interpreterSet, launcherSet, optionSet, runBench, scriptSet, utilitySet, wrapperSet } from './bench.js';
 import { formatReport } from './report.js';
 
 /**
@@ -7,7 +7,8 @@ import { formatReport } from './report.js';
  * runs the script-file set (the command written into a file and run); `--launchers` runs the
  * launcher set (the command run from find -exec or a git alias); `--interpreters` runs the
  * interpreter set (the command run from a python3 / node / perl one-liner); `--utilities` runs
- * the utility set (the command run from sed's e command, a tar checkpoint, or make --eval).
+ * the utility set (the command run from sed's e command, a tar checkpoint, or make --eval); `--options`
+ * runs the option set (git --upload-pack, node --import data:, python3 -m timeit).
  *
  * Exit code is 0: the built-in denylist gates are bypassable on purpose, so a non-zero exit
  * would just be noise. To guard a gate of your own in CI, assert its bypass rate in a test
@@ -24,7 +25,9 @@ function main(): void {
           ? runBench(interpreterSet())
           : process.argv.includes('--utilities')
             ? runBench(utilitySet())
-            : runBench();
+            : process.argv.includes('--options')
+              ? runBench(optionSet())
+              : runBench();
   process.stdout.write(formatReport(report) + '\n');
 }
 

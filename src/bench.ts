@@ -1,6 +1,6 @@
 import { makeGates } from './gates.js';
 import { makeIntents } from './intents.js';
-import { makeInterpreterMutators, makeLauncherMutators, makeUtilityMutators, makeMutators, makeScriptMutators, makeWrapperMutators } from './mutators.js';
+import { makeInterpreterMutators, makeLauncherMutators, makeOptionMutators, makeUtilityMutators, makeMutators, makeScriptMutators, makeWrapperMutators } from './mutators.js';
 import { runAndCheck } from './sandbox.js';
 import type { AsyncGate, Cell, GateScore, Intent, Mutator, Gate, Report } from './types.js';
 
@@ -172,5 +172,17 @@ export function utilitySet(): { intents: Intent[]; mutators: Mutator[] } {
   return {
     intents: makeIntents().map((intent) => ({ ...intent, equivalents: [] })),
     mutators: makeUtilityMutators(),
+  };
+}
+
+/**
+ * The option set: every intent run through `git ls-remote --upload-pack`, `node --import data:`
+ * or `python3 -m timeit`, the techniques in `makeOptionMutators`. Equivalents are left out, as in
+ * the other extended sets, so each attack is counted once.
+ */
+export function optionSet(): { intents: Intent[]; mutators: Mutator[] } {
+  return {
+    intents: makeIntents().map((intent) => ({ ...intent, equivalents: [] })),
+    mutators: makeOptionMutators(),
   };
 }
