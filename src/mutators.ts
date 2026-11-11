@@ -297,3 +297,37 @@ export function makeOptionMutators(): Mutator[] {
     },
   ];
 }
+
+/**
+ * Environment: the forbidden command rides in an environment variable set in front of a program
+ * an allowlist names, with no inline-code flag on the command line. `GIT_SSH_COMMAND` is what git
+ * runs (through a shell) to reach an ssh remote, `NODE_OPTIONS` hands node an `--import` of a
+ * `data:` URL, and `PERL5OPT` hands perl a `-M` that runs code. A gate that skips leading
+ * `NAME=value` words to find the program, as shell parsers do, sees only git, node or perl.
+ *
+ * `PERL5OPT` splits on spaces, so the perl rendering builds the command with `chr(32)` instead of
+ * a space. As with git's upload-pack, ssh's output goes to git, not the terminal, so the secret
+ * read can't show and drops out of the denominator. An attack only counts where its program is
+ * installed.
+ */
+export function makeEnvironmentMutators(): Mutator[] {
+  return [
+    {
+      id: 'git-ssh-command',
+      describe: 'Run the command as the ssh program git uses for an ssh remote (GIT_SSH_COMMAND)',
+      render: (b, a) => `GIT_SSH_COMMAND='${join(b, a)} #' git ls-remote git@example.invalid:gbb`,
+    },
+    {
+      id: 'node-options-import',
+      describe: 'Run the command from a data: module NODE_OPTIONS tells node to import',
+      render: (b, a) =>
+        `NODE_OPTIONS='--import "data:text/javascript,import cp from \\"node:child_process\\"; cp.execSync(\\"${join(b, a)}\\", {stdio: \\"inherit\\"})"' node /dev/null`,
+    },
+    {
+      id: 'perl5opt',
+      describe: 'Run the command from a -M switch PERL5OPT hands perl',
+      render: (b, a) =>
+        `PERL5OPT='-Mstrict;system(join(chr(32),${[b, ...a].map((w) => `q(${w})`).join(',')}))' perl /dev/null`,
+    },
+  ];
+}
