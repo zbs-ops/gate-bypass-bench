@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { interpreterSet, launcherSet, optionSet, runBench, scriptSet, utilitySet, wrapperSet } from '../src/bench.js';
+import { environmentSet, interpreterSet, launcherSet, optionSet, runBench, scriptSet, utilitySet, wrapperSet } from '../src/bench.js';
 
 const score = (gate: string) => {
   const report = runBench();
@@ -206,5 +206,49 @@ describe('the option set', () => {
     // git (delete, chmod) and node (all three) are on any machine this runs on; python3 adds 3.
     expect(report.scores[0]?.effectiveCommands).toBeGreaterThanOrEqual(5);
     expect(report.scores[0]?.bypasses).toBe(report.scores[0]?.effectiveCommands);
+  });
+});
+
+describe('the environment set', () => {
+  // The flag-aware allowlist from the option set, but reading the program the way a shell does:
+  // leading NAME=value words are assignments, so the program is the first word after them.
+  const ALLOWED = ['echo', 'ls', 'true', 'pwd', 'git', 'node', 'perl'];
+  const INLINE = ['-c', '-e', '-p', '--eval', '--print'];
+  const programOf = (command: string): string[] => {
+    // Assignments can hold quoted spaces (NAME='a b'), so drop each one whole before splitting.
+    let rest = command.trim();
+    for (;;) {
+      const m = /^[A-Za-z_][A-Za-z0-9_]*=('[^']*'|"[^"]*"|\S*)\s+/.exec(rest);
+      if (!m) break;
+      rest = rest.slice(m[0].length);
+    }
+    return rest.split(/\s+/);
+  };
+  const assignmentAware = {
+    id: 'allowlist-skipping-assignments',
+    describe: 'ALLOW echo, ls, true, pwd, git, node, perl, read after any NAME=value words, unless an inline-code flag appears',
+    decide: (command: string) => {
+      const words = programOf(command);
+      if (!ALLOWED.includes(words[0] ?? '')) return 'DENY';
+      return words.some((w) => INLINE.includes(w)) ? 'DENY' : 'ALLOW';
+    },
+  } as const;
+
+  it('the built-in allowlist holds, because it refuses quotes and names none of git, node or perl', () => {
+    expect(runBench(environmentSet()).scores.find((s) => s.gate === 'allowlist')?.bypasses).toBe(0);
+  });
+
+  it('the assignment-aware gate still refuses the plain commands and the interpreter one-liners', () => {
+    expect(assignmentAware.decide('rm protected.dat')).toBe('DENY');
+    expect(assignmentAware.decide('FOO=1 rm protected.dat')).toBe('DENY');
+    const report = runBench({ ...interpreterSet(), gates: [assignmentAware] });
+    expect(report.scores[0]?.bypasses).toBe(0);
+  });
+
+  it('lets every effective environment attack through', () => {
+    const report = runBench({ ...environmentSet(), gates: [assignmentAware] });
+    // git (delete, chmod), node (all three) and perl (all three) are on any machine this runs on.
+    expect(report.scores[0]?.effectiveCommands).toBe(8);
+    expect(report.scores[0]?.bypasses).toBe(8);
   });
 });
