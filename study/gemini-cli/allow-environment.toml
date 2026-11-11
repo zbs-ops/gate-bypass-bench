@@ -1,0 +1,8 @@
+# The allowlist again, plus three programs agents run all day and that people allow for that
+# reason: git, node and perl. Each reads a setting (GIT_SSH_COMMAND, NODE_OPTIONS, PERL5OPT)
+# that can run any other program, which is what the environment set measures.
+[[rule]]
+toolName = "run_shell_command"
+commandPrefix = ["echo", "ls", "true", "pwd", "git", "node", "perl"]
+decision = "allow"
+priority = 100
