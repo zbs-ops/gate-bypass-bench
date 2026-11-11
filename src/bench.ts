@@ -1,6 +1,6 @@
 import { makeGates } from './gates.js';
 import { makeIntents } from './intents.js';
-import { makeInterpreterMutators, makeLauncherMutators, makeOptionMutators, makeUtilityMutators, makeMutators, makeScriptMutators, makeWrapperMutators } from './mutators.js';
+import { makeEnvironmentMutators, makeInterpreterMutators, makeLauncherMutators, makeOptionMutators, makeUtilityMutators, makeMutators, makeScriptMutators, makeWrapperMutators } from './mutators.js';
 import { runAndCheck } from './sandbox.js';
 import type { AsyncGate, Cell, GateScore, Intent, Mutator, Gate, Report } from './types.js';
 
@@ -184,5 +184,17 @@ export function optionSet(): { intents: Intent[]; mutators: Mutator[] } {
   return {
     intents: makeIntents().map((intent) => ({ ...intent, equivalents: [] })),
     mutators: makeOptionMutators(),
+  };
+}
+
+/**
+ * The environment set: every intent run from `GIT_SSH_COMMAND`, `NODE_OPTIONS` or `PERL5OPT` in
+ * front of git, node or perl, the techniques in `makeEnvironmentMutators`. Equivalents are left
+ * out, as in the other extended sets, so each attack is counted once.
+ */
+export function environmentSet(): { intents: Intent[]; mutators: Mutator[] } {
+  return {
+    intents: makeIntents().map((intent) => ({ ...intent, equivalents: [] })),
+    mutators: makeEnvironmentMutators(),
   };
 }
