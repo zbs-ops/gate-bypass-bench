@@ -26,6 +26,7 @@ import {
   formatReport,
   makeGates,
   runBenchAsync,
+  environmentSet,
   launcherSet,
   scriptSet,
   wrapperSet,
@@ -125,6 +126,22 @@ const allowLaunchers = await geminiGate({
   ],
 });
 
+// Only used for the environment set: the same allow rule, with git, node and perl added.
+const allowEnvironment = await geminiGate({
+  id: 'gemini-cli-allow-git-node-perl',
+  describe: `Gemini CLI ${version}, default mode, non-interactive, commandPrefix allow rules that also name git, node and perl`,
+  policyFile: 'allow-environment.toml',
+  mode: ApprovalMode.DEFAULT,
+  interactive: false,
+  sanity: [
+    ['ls', 'ALLOW'],
+    ['git status', 'ALLOW'],
+    ['node app.js', 'ALLOW'],
+    ['perl script.pl', 'ALLOW'],
+    ['rm notes.txt', 'DENY'],
+  ],
+});
+
 const gemini = [denyRule, allowRule];
 const report = await runBenchAsync({ gates: [...makeGates(), ...gemini] });
 const scorecard = formatReport(report);
@@ -165,6 +182,14 @@ const launchGates = [...gemini, allowLaunchers];
 const launched = await runBenchAsync({ ...launcherSet(), gates: [...makeGates(), ...launchGates] });
 const launchedCard = formatReport(launched);
 process.stdout.write(launchedCard + '\n');
+
+// Extended set: the command run from GIT_SSH_COMMAND, NODE_OPTIONS or PERL5OPT in front of git,
+// node or perl, scored also against an allow rule that names those three.
+for (const g of [...gemini, allowLaunchers]) g.askedUser.length = 0;
+const envGates = [...gemini, allowEnvironment];
+const environment = await runBenchAsync({ ...environmentSet(), gates: [...makeGates(), ...envGates] });
+const environmentCard = formatReport(environment);
+process.stdout.write(environmentCard + '\n');
 
 writeFileSync(
   join(here, 'RESULTS.md'),
@@ -215,5 +240,17 @@ writeFileSync(
     '```',
     '',
     ...launchGates.flatMap((g) => table(g, launched)),
+    '# Extended set: environment',
+    '',
+    'The same gates on 9 more attacks: each blocked command placed in an environment variable in front',
+    'of an allowed program, `GIT_SSH_COMMAND` (git), `NODE_OPTIONS` (node) or `PERL5OPT` (perl)',
+    '(`npm run bench -- --environment`), plus one more gate: the allow rule with `git`, `node` and',
+    '`perl` added. Kept separate so the scorecard above is unchanged.',
+    '',
+    '```',
+    environmentCard,
+    '```',
+    '',
+    ...envGates.flatMap((g) => table(g, environment)),
   ].join('\n'),
 );
