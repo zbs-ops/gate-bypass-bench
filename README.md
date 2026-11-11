@@ -314,6 +314,8 @@ Shell parsers, and gates built on them, treat leading `NAME=value` words as vari
 
 `npm run bench -- --environment` runs all three intents through each. ssh's output goes to git, not the terminal, so git's secret read drops out, leaving 8 attacks. The word and tokenized denylists let all 8 through; the built-in allowlist none. A test builds the option set's flag-aware allowlist (git, node, perl, no `-c`/`-e`/`-p`) but reading the program after any assignments: it still refuses `rm`, `FOO=1 rm` and every interpreter one-liner, and lets all 8 through. A gate has to judge the variables too, not just the program.
 
+Gemini CLI 0.65.0, scored with its own engine (`study/gemini-cli/RESULTS.md`): its deny rules let all 8 through. Its allow rule, even with `git`, `node` and `perl` added, let none through. That isn't because it reads the variables: a `commandPrefix` rule doesn't match a command that starts with `NAME=value` at all, so `FOO=1 git status` and `LANG=C git status` are refused too (checked against the engine). Safe here, by matching the start of the string, at the cost of refusing harmless settings.
+
 ## When the hook itself misbehaves
 
 An allowlist only protects you if the agent enforces its answer. Gemini CLI and Codex both let
