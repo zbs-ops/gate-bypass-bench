@@ -2,6 +2,6 @@ export { runBench, runBenchAsync, wrapperSet, scriptSet, launcherSet, interprete
 export type { BenchOptions, AsyncBenchOptions } from './bench.js';
 export { makeGates, resolveFirstBinary, BLOCKED_BINARIES } from './gates.js';
 export { makeIntents } from './intents.js';
-export { makeMutators, makeWrapperMutators, makeScriptMutators, makeLauncherMutators, makeInterpreterMutators, makeUtilityMutators, makeOptionMutators } from './mutators.js';
+export { makeMutators, makeWrapperMutators, makeScriptMutators, makeLauncherMutators, makeInterpreterMutators, makeUtilityMutators, makeOptionMutators, makeEnvironmentMutators } from './mutators.js';
 export { formatReport } from './report.js';
 export type { AsyncGate, Cell, Gate, GateScore, Intent, Mutator, Report } from './types.js';
