@@ -316,6 +316,8 @@ Shell parsers, and gates built on them, treat leading `NAME=value` words as vari
 
 Gemini CLI 0.65.0, scored with its own engine (`study/gemini-cli/RESULTS.md`): its deny rules let all 8 through. Its allow rule, even with `git`, `node` and `perl` added, let none through. That isn't because it reads the variables: a `commandPrefix` rule doesn't match a command that starts with `NAME=value` at all, so `FOO=1 git status` and `LANG=C git status` are refused too (checked against the engine). Safe here, by matching the start of the string, at the cost of refusing harmless settings.
 
+Codex CLI 0.163.0 and opencode 1.19.4 behave the same way (`study/codex-cli/RESULTS.md`, `study/opencode/RESULTS.md`, from their own code): deny rules 8/8 through; allow rules 0/8, also with `git`, `node` and `perl` added, where all 9 go to a person. `FOO=1 git status`, `LANG=C git status` and `NODE_ENV=test node app.js` go to a person under that config too. So across all three products, the allow rules hold against this set because a leading setting never matches a prefix rule, not because anything reads the setting.
+
 ## When the hook itself misbehaves
 
 An allowlist only protects you if the agent enforces its answer. Gemini CLI and Codex both let
