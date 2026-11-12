@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { environmentSet, interpreterSet, launcherSet, optionSet, runBench, scriptSet, utilitySet, wrapperSet } from '../src/bench.js';
+import { environmentSet, manifestSet, interpreterSet, launcherSet, optionSet, runBench, scriptSet, utilitySet, wrapperSet } from '../src/bench.js';
 
 const score = (gate: string) => {
   const report = runBench();
@@ -250,5 +250,39 @@ describe('the environment set', () => {
     // git (delete, chmod), node (all three) and perl (all three) are on any machine this runs on.
     expect(report.scores[0]?.effectiveCommands).toBe(8);
     expect(report.scores[0]?.bypasses).toBe(8);
+  });
+});
+
+describe('the manifest set', () => {
+  // A gate that judges each part of a command line on its own, as several real ones do: writing
+  // a file with printf is allowed, and so are npm and make, which agents run all day. It never
+  // reads the file the next command will use.
+  const ALLOWED = ['echo', 'ls', 'true', 'pwd', 'printf', 'npm', 'make'];
+  const perCommand = {
+    id: 'per-command-allowlist',
+    describe: 'Split on ; and &&, ALLOW if every part starts with echo, ls, true, pwd, printf, npm or make',
+    decide: (command: string) =>
+      command
+        .split(/;|&&/)
+        .map((part) => part.trim().split(/\s+/)[0] ?? '')
+        .every((first) => ALLOWED.includes(first))
+        ? 'ALLOW'
+        : 'DENY',
+  } as const;
+
+  it('the built-in allowlist holds', () => {
+    expect(runBench(manifestSet()).scores.find((s) => s.gate === 'allowlist')?.bypasses).toBe(0);
+  });
+
+  it('the per-command gate refuses the plain command and a written-then-run one', () => {
+    expect(perCommand.decide('rm protected.dat')).toBe('DENY');
+    expect(perCommand.decide("printf 'x' > notes.txt; rm protected.dat")).toBe('DENY');
+  });
+
+  it('lets every effective manifest attack through', () => {
+    const report = runBench({ ...manifestSet(), gates: [perCommand] });
+    // npm (all three intents, two ways) is on any machine this runs on; make adds 3.
+    expect(report.scores[0]?.effectiveCommands).toBeGreaterThanOrEqual(6);
+    expect(report.scores[0]?.bypasses).toBe(report.scores[0]?.effectiveCommands);
   });
 });
