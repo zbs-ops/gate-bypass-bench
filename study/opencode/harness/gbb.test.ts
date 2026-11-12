@@ -64,6 +64,10 @@ const CONFIGS = {
   "allow-launchers": {
     bash: { "*": "ask", ...Object.fromEntries([...ALLOWED, "find", "git"].map((b) => [`${b} *`, "allow"])) },
   },
+  // The same, with git, node and perl added, as people do because agents run them all day.
+  "allow-environment": {
+    bash: { "*": "ask", ...Object.fromEntries([...ALLOWED, "git", "node", "perl"].map((b) => [`${b} *`, "allow"])) },
+  },
 } as const
 
 function verdict(requests: Req[], config: (typeof CONFIGS)[keyof typeof CONFIGS]): "allow" | "ask" | "deny" {
