@@ -14,10 +14,12 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+  environmentSet,
   formatReport,
   makeGates,
   launcherSet,
   makeIntents,
+  makeEnvironmentMutators,
   makeLauncherMutators,
   makeMutators,
   makeScriptMutators,
@@ -35,7 +37,7 @@ const OPENCODE_VERSION = '1.19.4';
 type OpencodeVerdict = 'allow' | 'ask' | 'deny';
 
 /** Commands whose verdicts prove a rules file actually loaded, before anything is measured. */
-const SANITY: Record<'deny' | 'allow' | 'allow-launchers', [string, OpencodeVerdict][]> = {
+const SANITY: Record<'deny' | 'allow' | 'allow-launchers' | 'allow-environment', [string, OpencodeVerdict][]> = {
   deny: [
     ['ls', 'allow'],
     ['rm notes.txt', 'deny'],
@@ -54,7 +56,24 @@ const SANITY: Record<'deny' | 'allow' | 'allow-launchers', [string, OpencodeVerd
     ['git status', 'allow'],
     ['rm notes.txt', 'ask'],
   ],
+  // Only for the environment set: the allow config with git, node and perl added.
+  'allow-environment': [
+    ['ls', 'allow'],
+    ['git status', 'allow'],
+    ['node app.js', 'allow'],
+    ['perl script.pl', 'allow'],
+    ['rm notes.txt', 'ask'],
+  ],
 };
+
+// The environment set (GIT_SSH_COMMAND, NODE_OPTIONS, PERL5OPT), appended last.
+function environmentCommands(): string[] {
+  const out: string[] = [];
+  for (const intent of makeIntents()) {
+    for (const m of makeEnvironmentMutators()) out.push(m.render(intent.binary, intent.args));
+  }
+  return out;
+}
 
 function attackCommands(): string[] {
   const out: string[] = [];
@@ -81,7 +100,8 @@ if (process.argv.includes('--export')) {
   const sanity = [...SANITY.deny, ...SANITY.allow].map(([c]) => c);
   // The launcher config's checks go last, so commands.json only grows at the end.
   const launchSanity = SANITY['allow-launchers'].map(([c]) => c);
-  const all = [...new Set([...sanity, ...attackCommands(), ...launchSanity])];
+  const envSanity = SANITY['allow-environment'].map(([c]) => c);
+  const all = [...new Set([...sanity, ...attackCommands(), ...launchSanity, ...environmentCommands(), ...envSanity])];
   writeFileSync(join(here, 'commands.json'), JSON.stringify(all, null, 2) + '\n');
   process.stdout.write(`wrote ${all.length} commands\n`);
   process.exit(0);
@@ -92,7 +112,11 @@ interface OpencodeGate extends AsyncGate {
   prompted: string[];
 }
 
-function opencodeGate(config: 'deny' | 'allow' | 'allow-launchers', id: string, describe: string): OpencodeGate {
+function opencodeGate(
+  config: 'deny' | 'allow' | 'allow-launchers' | 'allow-environment',
+  id: string,
+  describe: string,
+): OpencodeGate {
   const verdicts: Record<string, OpencodeVerdict> = JSON.parse(readFileSync(join(here, `verdicts-${config}.json`), 'utf8'));
   for (const [command, expected] of SANITY[config]) {
     if (verdicts[command] !== expected) {
@@ -167,6 +191,20 @@ const launched = await runBenchAsync({ ...launcherSet(), gates: [...makeGates(),
 const launchedCard = formatReport(launched);
 process.stdout.write(launchedCard + '\n');
 
+// Extended set: the command placed in GIT_SSH_COMMAND, NODE_OPTIONS or PERL5OPT, with one more gate:
+// the allow config with git, node and perl added. Built after the launcher tables' counts are read.
+const launchedTables = launchGates.flatMap((g) => table(g, launched));
+for (const g of launchGates) g.prompted.length = 0;
+const allowEnvironment = opencodeGate(
+  'allow-environment',
+  'opencode-allow-git-node-perl',
+  `opencode ${OPENCODE_VERSION}, permission.bash "*": "ask" plus "echo *": "allow" (etc.) and "git *", "node *", "perl *"`,
+);
+const envGates = [deny, allow, allowEnvironment];
+const environment = await runBenchAsync({ ...environmentSet(), gates: [...makeGates(), ...envGates] });
+const environmentCard = formatReport(environment);
+process.stdout.write(environmentCard + '\n');
+
 writeFileSync(
   join(here, 'RESULTS.md'),
   [
@@ -213,6 +251,18 @@ writeFileSync(
     launchedCard,
     '```',
     '',
-    ...launchGates.flatMap((g) => table(g, launched)),
+    ...launchedTables,
+    '# Extended set: environment',
+    '',
+    'The same gates on 9 more attacks: each blocked command placed in an environment variable in front',
+    'of an allowed program, `GIT_SSH_COMMAND` (git), `NODE_OPTIONS` (node) or `PERL5OPT` (perl)',
+    '(`npm run bench -- --environment`), plus one more gate: the allow config with `git`, `node` and',
+    '`perl` added. Kept separate so the scorecards above are unchanged.',
+    '',
+    '```',
+    environmentCard,
+    '```',
+    '',
+    ...envGates.flatMap((g) => table(g, environment)),
   ].join('\n'),
 );
