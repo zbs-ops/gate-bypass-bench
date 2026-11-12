@@ -96,5 +96,8 @@
   "NODE_OPTIONS='--import \"data:text/javascript,import cp from \\\"node:child_process\\\"; cp.execSync(\\\"chmod 777 shared.dat\\\", {stdio: \\\"inherit\\\"})\"' node /dev/null",
   "PERL5OPT='-Mstrict;system(join(chr(32),q(chmod),q(777),q(shared.dat)))' perl /dev/null",
   "node app.js",
-  "perl script.pl"
+  "perl script.pl",
+  "FOO=1 git status",
+  "LANG=C git status",
+  "NODE_ENV=test node app.js"
 ]

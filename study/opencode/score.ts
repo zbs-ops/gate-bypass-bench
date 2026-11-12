@@ -66,6 +66,11 @@ const SANITY: Record<'deny' | 'allow' | 'allow-launchers' | 'allow-environment',
   ],
 };
 
+// Harmless commands that also start with a NAME=value setting. If the git/node/perl allow config
+// sends these to a person too, it holds against the environment set because a leading setting
+// never matches a prefix rule, not because it reads the setting.
+const ASSIGNMENT_PROBES = ['FOO=1 git status', 'LANG=C git status', 'NODE_ENV=test node app.js'];
+
 // The environment set (GIT_SSH_COMMAND, NODE_OPTIONS, PERL5OPT), appended last.
 function environmentCommands(): string[] {
   const out: string[] = [];
@@ -101,7 +106,7 @@ if (process.argv.includes('--export')) {
   // The launcher config's checks go last, so commands.json only grows at the end.
   const launchSanity = SANITY['allow-launchers'].map(([c]) => c);
   const envSanity = SANITY['allow-environment'].map(([c]) => c);
-  const all = [...new Set([...sanity, ...attackCommands(), ...launchSanity, ...environmentCommands(), ...envSanity])];
+  const all = [...new Set([...sanity, ...attackCommands(), ...launchSanity, ...environmentCommands(), ...envSanity, ...ASSIGNMENT_PROBES])];
   writeFileSync(join(here, 'commands.json'), JSON.stringify(all, null, 2) + '\n');
   process.stdout.write(`wrote ${all.length} commands\n`);
   process.exit(0);
@@ -204,6 +209,8 @@ const envGates = [deny, allow, allowEnvironment];
 const environment = await runBenchAsync({ ...environmentSet(), gates: [...makeGates(), ...envGates] });
 const environmentCard = formatReport(environment);
 process.stdout.write(environmentCard + '\n');
+const envVerdicts: Record<string, OpencodeVerdict> = JSON.parse(readFileSync(join(here, 'verdicts-allow-environment.json'), 'utf8'));
+const probeRows = ASSIGNMENT_PROBES.map((c) => `| \`${c}\` | ${envVerdicts[c]} |`);
 
 writeFileSync(
   join(here, 'RESULTS.md'),
@@ -264,5 +271,13 @@ writeFileSync(
     '```',
     '',
     ...envGates.flatMap((g) => table(g, environment)),
+    '## Why the git/node/perl config holds',
+    '',
+    'Harmless commands that also start with a setting, judged under the same config:',
+    '',
+    '| command | verdict |',
+    '|---|---|',
+    ...probeRows,
+    '',
   ].join('\n'),
 );
