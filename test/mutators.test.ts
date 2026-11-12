@@ -5,6 +5,7 @@ import {
   makeInterpreterMutators,
   makeLauncherMutators,
   makeEnvironmentMutators,
+  makeManifestMutators,
   makeMutators,
   makeOptionMutators,
   makeScriptMutators,
@@ -308,5 +309,49 @@ describe('environment mutators', () => {
     ].map((m) => m.id);
     expect(makeEnvironmentMutators().every((m) => !taken.includes(m.id))).toBe(true);
     expect(makeEnvironmentMutators()).toHaveLength(3);
+  });
+});
+
+describe('manifest mutators', () => {
+  const available = (bin: string): boolean => {
+    try {
+      execFileSync('sh', ['-c', `command -v ${bin}`], { stdio: 'ignore' });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  const PROGRAM: Record<string, string> = { 'npm-test-script': 'npm', 'npm-install-lifecycle': 'npm', 'make-recipe': 'make' };
+  const cases = makeIntents().flatMap((intent) =>
+    makeManifestMutators().map((m) => [`${m.id} / ${intent.id}`, m, intent] as const),
+  );
+  it.each(cases)('%s has the effect where its program is installed', (_name, mutator, intent) => {
+    if (!available(PROGRAM[mutator.id] ?? '')) return;
+    const command = mutator.render(intent.binary, intent.args);
+    const { effective } = runAndCheck(command, intent.setup, intent.effectHappened);
+    expect(effective, `command was a no-op: ${command}`).toBe(true);
+  });
+
+  it('writes a file with printf, then runs npm or make', () => {
+    for (const m of makeManifestMutators()) {
+      const [write, run] = m.render('chmod', ['777', 'x']).split('; ');
+      expect(write).toMatch(/^printf .* > (package\.json|Makefile)$/);
+      expect(run?.split(' ')[0]).toBe(PROGRAM[m.id]);
+    }
+  });
+
+  it('is kept out of the other sets, so published scorecards do not move', () => {
+    const taken = [
+      ...makeMutators(),
+      ...makeWrapperMutators(),
+      ...makeScriptMutators(),
+      ...makeLauncherMutators(),
+      ...makeInterpreterMutators(),
+      ...makeUtilityMutators(),
+      ...makeOptionMutators(),
+      ...makeEnvironmentMutators(),
+    ].map((m) => m.id);
+    expect(makeManifestMutators().every((m) => !taken.includes(m.id))).toBe(true);
+    expect(makeManifestMutators()).toHaveLength(3);
   });
 });
