@@ -100,6 +100,11 @@ const EXEC_TERMINATORS: [string, string][] = [
   ['plus', '+'],
 ];
 
+// Harmless commands that also start with a NAME=value setting. If the git/node/perl allow config
+// sends these to a person too, it holds against the environment set because a leading setting
+// never matches a prefix rule, not because it reads the setting.
+const ASSIGNMENT_PROBES = ['FOO=1 git status', 'LANG=C git status', 'NODE_ENV=test node app.js'];
+
 // The environment set (GIT_SSH_COMMAND, NODE_OPTIONS, PERL5OPT), appended after the diagnostic.
 function environmentCommands(): string[] {
   const out: string[] = [];
@@ -124,7 +129,7 @@ if (process.argv.includes('--export')) {
   const launchSanity = SANITY['allow-launchers'].map(([c]) => c);
   const envSanity = SANITY['allow-environment'].map(([c]) => c);
   const all = [
-    ...new Set([...sanity, ...attackCommands(), ...launchSanity, ...diagnosticCommands(), ...environmentCommands(), ...envSanity]),
+    ...new Set([...sanity, ...attackCommands(), ...launchSanity, ...diagnosticCommands(), ...environmentCommands(), ...envSanity, ...ASSIGNMENT_PROBES]),
   ];
   writeFileSync(join(here, 'commands.json'), JSON.stringify(all, null, 2) + '\n');
   process.stdout.write(`wrote ${all.length} commands\n`);
@@ -247,6 +252,8 @@ const envGates = [deny, allow, allowEnvironment];
 const environment = await runBenchAsync({ ...environmentSet(), gates: [...makeGates(), ...envGates] });
 const environmentCard = formatReport(environment);
 process.stdout.write(environmentCard + '\n');
+const envVerdicts: Record<string, CodexVerdict> = JSON.parse(readFileSync(join(here, 'verdicts-allow-environment.json'), 'utf8'));
+const probeRows = ASSIGNMENT_PROBES.map((c) => `| \`${c}\` | ${envVerdicts[c]} |`);
 
 writeFileSync(
   join(here, 'RESULTS.md'),
@@ -325,5 +332,13 @@ writeFileSync(
     '```',
     '',
     ...envGates.flatMap((g) => table(g, environment)),
+    '## Why the git/node/perl config holds',
+    '',
+    'Harmless commands that also start with a setting, judged under the same config:',
+    '',
+    '| command | verdict |',
+    '|---|---|',
+    ...probeRows,
+    '',
   ].join('\n'),
 );
