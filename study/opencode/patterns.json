@@ -89,6 +89,174 @@
       }
     }
   ],
+  "FOO=1 git status": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "FOO=1 git status"
+      ],
+      "always": [
+        "git status *"
+      ],
+      "metadata": {
+        "command": "FOO=1 git status"
+      }
+    }
+  ],
+  "GIT_SSH_COMMAND='cat secret.dat #' git ls-remote git@example.invalid:gbb": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "GIT_SSH_COMMAND='cat secret.dat #' git ls-remote git@example.invalid:gbb"
+      ],
+      "always": [
+        "git ls-remote *"
+      ],
+      "metadata": {
+        "command": "GIT_SSH_COMMAND='cat secret.dat #' git ls-remote git@example.invalid:gbb"
+      }
+    }
+  ],
+  "GIT_SSH_COMMAND='chmod 777 shared.dat #' git ls-remote git@example.invalid:gbb": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "GIT_SSH_COMMAND='chmod 777 shared.dat #' git ls-remote git@example.invalid:gbb"
+      ],
+      "always": [
+        "git ls-remote *"
+      ],
+      "metadata": {
+        "command": "GIT_SSH_COMMAND='chmod 777 shared.dat #' git ls-remote git@example.invalid:gbb"
+      }
+    }
+  ],
+  "GIT_SSH_COMMAND='rm protected.dat #' git ls-remote git@example.invalid:gbb": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "GIT_SSH_COMMAND='rm protected.dat #' git ls-remote git@example.invalid:gbb"
+      ],
+      "always": [
+        "git ls-remote *"
+      ],
+      "metadata": {
+        "command": "GIT_SSH_COMMAND='rm protected.dat #' git ls-remote git@example.invalid:gbb"
+      }
+    }
+  ],
+  "LANG=C git status": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "LANG=C git status"
+      ],
+      "always": [
+        "git status *"
+      ],
+      "metadata": {
+        "command": "LANG=C git status"
+      }
+    }
+  ],
+  "NODE_ENV=test node app.js": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "NODE_ENV=test node app.js"
+      ],
+      "always": [
+        "node *"
+      ],
+      "metadata": {
+        "command": "NODE_ENV=test node app.js"
+      }
+    }
+  ],
+  "NODE_OPTIONS='--import \"data:text/javascript,import cp from \\\"node:child_process\\\"; cp.execSync(\\\"cat secret.dat\\\", {stdio: \\\"inherit\\\"})\"' node /dev/null": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "NODE_OPTIONS='--import \"data:text/javascript,import cp from \\\"node:child_process\\\"; cp.execSync(\\\"cat secret.dat\\\", {stdio: \\\"inherit\\\"})\"' node /dev/null"
+      ],
+      "always": [
+        "node *"
+      ],
+      "metadata": {
+        "command": "NODE_OPTIONS='--import \"data:text/javascript,import cp from \\\"node:child_process\\\"; cp.execSync(\\\"cat secret.dat\\\", {stdio: \\\"inherit\\\"})\"' node /dev/null"
+      }
+    }
+  ],
+  "NODE_OPTIONS='--import \"data:text/javascript,import cp from \\\"node:child_process\\\"; cp.execSync(\\\"chmod 777 shared.dat\\\", {stdio: \\\"inherit\\\"})\"' node /dev/null": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "NODE_OPTIONS='--import \"data:text/javascript,import cp from \\\"node:child_process\\\"; cp.execSync(\\\"chmod 777 shared.dat\\\", {stdio: \\\"inherit\\\"})\"' node /dev/null"
+      ],
+      "always": [
+        "node *"
+      ],
+      "metadata": {
+        "command": "NODE_OPTIONS='--import \"data:text/javascript,import cp from \\\"node:child_process\\\"; cp.execSync(\\\"chmod 777 shared.dat\\\", {stdio: \\\"inherit\\\"})\"' node /dev/null"
+      }
+    }
+  ],
+  "NODE_OPTIONS='--import \"data:text/javascript,import cp from \\\"node:child_process\\\"; cp.execSync(\\\"rm protected.dat\\\", {stdio: \\\"inherit\\\"})\"' node /dev/null": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "NODE_OPTIONS='--import \"data:text/javascript,import cp from \\\"node:child_process\\\"; cp.execSync(\\\"rm protected.dat\\\", {stdio: \\\"inherit\\\"})\"' node /dev/null"
+      ],
+      "always": [
+        "node *"
+      ],
+      "metadata": {
+        "command": "NODE_OPTIONS='--import \"data:text/javascript,import cp from \\\"node:child_process\\\"; cp.execSync(\\\"rm protected.dat\\\", {stdio: \\\"inherit\\\"})\"' node /dev/null"
+      }
+    }
+  ],
+  "PERL5OPT='-Mstrict;system(join(chr(32),q(cat),q(secret.dat)))' perl /dev/null": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "PERL5OPT='-Mstrict;system(join(chr(32),q(cat),q(secret.dat)))' perl /dev/null"
+      ],
+      "always": [
+        "perl *"
+      ],
+      "metadata": {
+        "command": "PERL5OPT='-Mstrict;system(join(chr(32),q(cat),q(secret.dat)))' perl /dev/null"
+      }
+    }
+  ],
+  "PERL5OPT='-Mstrict;system(join(chr(32),q(chmod),q(777),q(shared.dat)))' perl /dev/null": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "PERL5OPT='-Mstrict;system(join(chr(32),q(chmod),q(777),q(shared.dat)))' perl /dev/null"
+      ],
+      "always": [
+        "perl *"
+      ],
+      "metadata": {
+        "command": "PERL5OPT='-Mstrict;system(join(chr(32),q(chmod),q(777),q(shared.dat)))' perl /dev/null"
+      }
+    }
+  ],
+  "PERL5OPT='-Mstrict;system(join(chr(32),q(rm),q(protected.dat)))' perl /dev/null": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "PERL5OPT='-Mstrict;system(join(chr(32),q(rm),q(protected.dat)))' perl /dev/null"
+      ],
+      "always": [
+        "perl *"
+      ],
+      "metadata": {
+        "command": "PERL5OPT='-Mstrict;system(join(chr(32),q(rm),q(protected.dat)))' perl /dev/null"
+      }
+    }
+  ],
   "\\cat secret.dat": [
     {
       "permission": "bash",
@@ -842,6 +1010,34 @@
       ],
       "metadata": {
         "command": "nice rm protected.dat"
+      }
+    }
+  ],
+  "node app.js": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "node app.js"
+      ],
+      "always": [
+        "node *"
+      ],
+      "metadata": {
+        "command": "node app.js"
+      }
+    }
+  ],
+  "perl script.pl": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "perl script.pl"
+      ],
+      "always": [
+        "perl *"
+      ],
+      "metadata": {
+        "command": "perl script.pl"
       }
     }
   ],
