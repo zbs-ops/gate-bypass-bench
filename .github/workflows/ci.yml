@@ -66,7 +66,8 @@ jobs:
           $H study/codex-cli/deny.rules never study/codex-cli/commands.json > study/codex-cli/verdicts-deny.json
           $H study/codex-cli/allow.rules unless-trusted study/codex-cli/commands.json > study/codex-cli/verdicts-allow.json
           $H study/codex-cli/allow-launchers.rules unless-trusted study/codex-cli/commands.json > study/codex-cli/verdicts-allow-launchers.json
-          cat study/codex-cli/verdicts-deny.json study/codex-cli/verdicts-allow.json study/codex-cli/verdicts-allow-launchers.json
+          $H study/codex-cli/allow-environment.rules unless-trusted study/codex-cli/commands.json > study/codex-cli/verdicts-allow-environment.json
+          cat study/codex-cli/verdicts-deny.json study/codex-cli/verdicts-allow.json study/codex-cli/verdicts-allow-launchers.json study/codex-cli/verdicts-allow-environment.json
       - run: npx tsx study/codex-cli/score.ts
       - name: Fail if the committed study no longer matches
         run: |
@@ -100,7 +101,7 @@ jobs:
           cd .opencode-src/packages/opencode
           GBB_COMMANDS="$GITHUB_WORKSPACE/study/opencode/commands.json" GBB_OUT="$GITHUB_WORKSPACE/study/opencode" \
             bun test test/tool/gbb.test.ts --timeout 120000
-          for f in patterns verdicts-deny verdicts-allow verdicts-allow-launchers; do echo "=== $f"; cat "$GITHUB_WORKSPACE/study/opencode/$f.json"; done
+          for f in patterns verdicts-deny verdicts-allow verdicts-allow-launchers verdicts-allow-environment; do echo "=== $f"; cat "$GITHUB_WORKSPACE/study/opencode/$f.json"; done
       - run: npx tsx study/opencode/score.ts
       - name: Fail if the committed study no longer matches
         run: |
