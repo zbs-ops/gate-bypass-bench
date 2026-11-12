@@ -1,6 +1,6 @@
 import { makeGates } from './gates.js';
 import { makeIntents } from './intents.js';
-import { makeEnvironmentMutators, makeInterpreterMutators, makeLauncherMutators, makeOptionMutators, makeUtilityMutators, makeMutators, makeScriptMutators, makeWrapperMutators } from './mutators.js';
+import { makeEnvironmentMutators, makeManifestMutators, makeInterpreterMutators, makeLauncherMutators, makeOptionMutators, makeUtilityMutators, makeMutators, makeScriptMutators, makeWrapperMutators } from './mutators.js';
 import { runAndCheck } from './sandbox.js';
 import type { AsyncGate, Cell, GateScore, Intent, Mutator, Gate, Report } from './types.js';
 
@@ -196,5 +196,17 @@ export function environmentSet(): { intents: Intent[]; mutators: Mutator[] } {
   return {
     intents: makeIntents().map((intent) => ({ ...intent, equivalents: [] })),
     mutators: makeEnvironmentMutators(),
+  };
+}
+
+/**
+ * The manifest set: every intent written into package.json or a Makefile and run with npm test,
+ * a bare npm install or make, the techniques in `makeManifestMutators`. Equivalents are left out,
+ * as in the other extended sets, so each attack is counted once.
+ */
+export function manifestSet(): { intents: Intent[]; mutators: Mutator[] } {
+  return {
+    intents: makeIntents().map((intent) => ({ ...intent, equivalents: [] })),
+    mutators: makeManifestMutators(),
   };
 }

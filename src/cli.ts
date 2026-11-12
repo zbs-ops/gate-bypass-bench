@@ -1,4 +1,4 @@
-import { environmentSet, interpreterSet, launcherSet, optionSet, runBench, scriptSet, utilitySet, wrapperSet } from './bench.js';
+import { environmentSet, manifestSet, interpreterSet, launcherSet, optionSet, runBench, scriptSet, utilitySet, wrapperSet } from './bench.js';
 import { formatReport } from './report.js';
 
 /**
@@ -9,7 +9,9 @@ import { formatReport } from './report.js';
  * interpreter set (the command run from a python3 / node / perl one-liner); `--utilities` runs
  * the utility set (the command run from sed's e command, a tar checkpoint, or make --eval); `--options`
  * runs the option set (git --upload-pack, node --import data:, python3 -m timeit); `--environment`
- * runs the environment set (GIT_SSH_COMMAND, NODE_OPTIONS, PERL5OPT in front of git, node, perl).
+ * runs the environment set (GIT_SSH_COMMAND, NODE_OPTIONS, PERL5OPT in front of git, node, perl);
+ * `--manifests` runs the manifest set (the command written into package.json or a Makefile, then
+ * npm test, npm install or make).
  *
  * Exit code is 0: the built-in denylist gates are bypassable on purpose, so a non-zero exit
  * would just be noise. To guard a gate of your own in CI, assert its bypass rate in a test
@@ -30,7 +32,9 @@ function main(): void {
               ? runBench(optionSet())
               : process.argv.includes('--environment')
                 ? runBench(environmentSet())
-                : runBench();
+                : process.argv.includes('--manifests')
+                  ? runBench(manifestSet())
+                  : runBench();
   process.stdout.write(formatReport(report) + '\n');
 }
 
