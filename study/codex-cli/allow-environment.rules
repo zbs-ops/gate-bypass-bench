@@ -1,0 +1,6 @@
+# The allowlist version with git, node and perl added, as people do because agents run them all
+# day. Each reads a setting (GIT_SSH_COMMAND, NODE_OPTIONS, PERL5OPT) that can run any program.
+prefix_rule(
+    pattern = [["echo", "ls", "true", "pwd", "git", "node", "perl"]],
+    decision = "allow",
+)
