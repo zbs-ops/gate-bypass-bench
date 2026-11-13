@@ -1,0 +1,9 @@
+# The allowlist again, plus the three programs the manifest set needs: printf (to write a
+# file), npm and make. Agents run tests and builds all day, so people allow npm and make for
+# that reason; printf is as harmless as echo. npm test, npm install and make each run whatever
+# a project file says, which is what the manifest set measures.
+[[rule]]
+toolName = "run_shell_command"
+commandPrefix = ["echo", "ls", "true", "pwd", "printf", "npm", "make"]
+decision = "allow"
+priority = 100
