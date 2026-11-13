@@ -1,0 +1,7 @@
+# The allowlist version with printf, npm and make added, as people do because agents run tests
+# and builds all day (printf is as harmless as echo). npm test, npm install and make each run
+# whatever a project file says, which is what the manifest set measures.
+prefix_rule(
+    pattern = [["echo", "ls", "true", "pwd", "printf", "npm", "make"]],
+    decision = "allow",
+)
