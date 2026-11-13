@@ -328,6 +328,16 @@ Agents run tests and builds all day, so allowlists name `npm` and `make`. These 
 
 `npm run bench -- --manifests` runs all three intents through each. The word and tokenized denylists let every effective one through; the built-in allowlist none. A test builds a gate that splits the line on `;` and `&&` and allows writing a file plus `npm` and `make`. It refuses `rm` and a written-then-run `rm`, and lets every effective manifest attack through, because it never reads the file the next command uses. 6 attacks here without `make`, 9 where it's installed (CI prints the scorecard).
 
+The three products, each from its own code (`study/*/RESULTS.md`, with `make`, 9 attacks), under a deny config, an allow config, and an allow config that also names `printf`, `npm` and `make`, as people do because agents run tests and builds all day:
+
+| product | deny rules | allow rules | allow + printf, npm, make |
+|---|---|---|---|
+| Gemini CLI 0.65.0 | 9/9 through | 0/9 | 0/9 (refused) |
+| Codex CLI 0.163.0 | 9/9 through | 0/9 | 0/9 (all 9 sent to a person) |
+| opencode 1.19.4 | 9/9 through | 0/9 | **9/9 through** |
+
+Harmless probes under that last config show what each verdict turns on. All three split the line at `;` and judge each part, so `printf x; npm test` is allowed everywhere. The difference is the write to a file: Gemini's allow rule never matches a command with a redirection, Codex sends `printf 'x' > notes.txt` to a person, and opencode allows it. So in opencode, allowing `npm` or `make` lets an agent write a project file and run it in one unattended line. None of the three reads the file the next command uses.
+
 ## When the hook itself misbehaves
 
 An allowlist only protects you if the agent enforces its answer. Gemini CLI and Codex both let
