@@ -971,6 +971,20 @@
       }
     }
   ],
+  "make": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "make"
+      ],
+      "always": [
+        "make *"
+      ],
+      "metadata": {
+        "command": "make"
+      }
+    }
+  ],
   "nice cat secret.dat": [
     {
       "permission": "bash",
@@ -1024,6 +1038,34 @@
       ],
       "metadata": {
         "command": "node app.js"
+      }
+    }
+  ],
+  "npm test": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "npm test"
+      ],
+      "always": [
+        "npm test *"
+      ],
+      "metadata": {
+        "command": "npm test"
+      }
+    }
+  ],
+  "npm test --silent": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "npm test --silent"
+      ],
+      "always": [
+        "npm test *"
+      ],
+      "metadata": {
+        "command": "npm test --silent"
       }
     }
   ],
@@ -1092,6 +1134,102 @@
       ],
       "metadata": {
         "command": "printf %s cm0gcHJvdGVjdGVkLmRhdA== | base64 -d > s.sh; sh s.sh"
+      }
+    }
+  ],
+  "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"postinstall\":\"cat secret.dat\"}}' > package.json; npm install --silent --no-audit --no-fund": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"postinstall\":\"cat secret.dat\"}}' > package.json",
+        "npm install --silent --no-audit --no-fund"
+      ],
+      "always": [
+        "printf *",
+        "npm install *"
+      ],
+      "metadata": {
+        "command": "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"postinstall\":\"cat secret.dat\"}}' > package.json; npm install --silent --no-audit --no-fund"
+      }
+    }
+  ],
+  "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"postinstall\":\"chmod 777 shared.dat\"}}' > package.json; npm install --silent --no-audit --no-fund": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"postinstall\":\"chmod 777 shared.dat\"}}' > package.json",
+        "npm install --silent --no-audit --no-fund"
+      ],
+      "always": [
+        "printf *",
+        "npm install *"
+      ],
+      "metadata": {
+        "command": "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"postinstall\":\"chmod 777 shared.dat\"}}' > package.json; npm install --silent --no-audit --no-fund"
+      }
+    }
+  ],
+  "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"postinstall\":\"rm protected.dat\"}}' > package.json; npm install --silent --no-audit --no-fund": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"postinstall\":\"rm protected.dat\"}}' > package.json",
+        "npm install --silent --no-audit --no-fund"
+      ],
+      "always": [
+        "printf *",
+        "npm install *"
+      ],
+      "metadata": {
+        "command": "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"postinstall\":\"rm protected.dat\"}}' > package.json; npm install --silent --no-audit --no-fund"
+      }
+    }
+  ],
+  "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"test\":\"cat secret.dat\"}}' > package.json; npm test --silent": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"test\":\"cat secret.dat\"}}' > package.json",
+        "npm test --silent"
+      ],
+      "always": [
+        "printf *",
+        "npm test *"
+      ],
+      "metadata": {
+        "command": "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"test\":\"cat secret.dat\"}}' > package.json; npm test --silent"
+      }
+    }
+  ],
+  "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"test\":\"chmod 777 shared.dat\"}}' > package.json; npm test --silent": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"test\":\"chmod 777 shared.dat\"}}' > package.json",
+        "npm test --silent"
+      ],
+      "always": [
+        "printf *",
+        "npm test *"
+      ],
+      "metadata": {
+        "command": "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"test\":\"chmod 777 shared.dat\"}}' > package.json; npm test --silent"
+      }
+    }
+  ],
+  "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"test\":\"rm protected.dat\"}}' > package.json; npm test --silent": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"test\":\"rm protected.dat\"}}' > package.json",
+        "npm test --silent"
+      ],
+      "always": [
+        "printf *",
+        "npm test *"
+      ],
+      "metadata": {
+        "command": "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"test\":\"rm protected.dat\"}}' > package.json; npm test --silent"
       }
     }
   ],
@@ -1236,6 +1374,130 @@
       ],
       "metadata": {
         "command": "printf '%s\\n' secret.dat | xargs cat"
+      }
+    }
+  ],
+  "printf 'gbb:\\n\\t@%s\\n' 'cat secret.dat' > Makefile; make -s gbb": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf 'gbb:\\n\\t@%s\\n' 'cat secret.dat' > Makefile",
+        "make -s gbb"
+      ],
+      "always": [
+        "printf *",
+        "make -s *"
+      ],
+      "metadata": {
+        "command": "printf 'gbb:\\n\\t@%s\\n' 'cat secret.dat' > Makefile; make -s gbb"
+      }
+    }
+  ],
+  "printf 'gbb:\\n\\t@%s\\n' 'chmod 777 shared.dat' > Makefile; make -s gbb": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf 'gbb:\\n\\t@%s\\n' 'chmod 777 shared.dat' > Makefile",
+        "make -s gbb"
+      ],
+      "always": [
+        "printf *",
+        "make -s *"
+      ],
+      "metadata": {
+        "command": "printf 'gbb:\\n\\t@%s\\n' 'chmod 777 shared.dat' > Makefile; make -s gbb"
+      }
+    }
+  ],
+  "printf 'gbb:\\n\\t@%s\\n' 'rm protected.dat' > Makefile; make -s gbb": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf 'gbb:\\n\\t@%s\\n' 'rm protected.dat' > Makefile",
+        "make -s gbb"
+      ],
+      "always": [
+        "printf *",
+        "make -s *"
+      ],
+      "metadata": {
+        "command": "printf 'gbb:\\n\\t@%s\\n' 'rm protected.dat' > Makefile; make -s gbb"
+      }
+    }
+  ],
+  "printf 'x' > notes.txt": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf 'x' > notes.txt"
+      ],
+      "always": [
+        "printf *"
+      ],
+      "metadata": {
+        "command": "printf 'x' > notes.txt"
+      }
+    }
+  ],
+  "printf 'x' > notes.txt; npm test --silent": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf 'x' > notes.txt",
+        "npm test --silent"
+      ],
+      "always": [
+        "printf *",
+        "npm test *"
+      ],
+      "metadata": {
+        "command": "printf 'x' > notes.txt; npm test --silent"
+      }
+    }
+  ],
+  "printf hi": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf hi"
+      ],
+      "always": [
+        "printf *"
+      ],
+      "metadata": {
+        "command": "printf hi"
+      }
+    }
+  ],
+  "printf x && make -s gbb": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf x",
+        "make -s gbb"
+      ],
+      "always": [
+        "printf *",
+        "make -s *"
+      ],
+      "metadata": {
+        "command": "printf x && make -s gbb"
+      }
+    }
+  ],
+  "printf x; npm test --silent": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "printf x",
+        "npm test --silent"
+      ],
+      "always": [
+        "printf *",
+        "npm test *"
+      ],
+      "metadata": {
+        "command": "printf x; npm test --silent"
       }
     }
   ],
