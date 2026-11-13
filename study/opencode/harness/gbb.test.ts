@@ -68,6 +68,10 @@ const CONFIGS = {
   "allow-environment": {
     bash: { "*": "ask", ...Object.fromEntries([...ALLOWED, "git", "node", "perl"].map((b) => [`${b} *`, "allow"])) },
   },
+  // The same, with printf, npm and make added, as people do because agents run tests and builds.
+  "allow-manifests": {
+    bash: { "*": "ask", ...Object.fromEntries([...ALLOWED, "printf", "npm", "make"].map((b) => [`${b} *`, "allow"])) },
+  },
 } as const
 
 function verdict(requests: Req[], config: (typeof CONFIGS)[keyof typeof CONFIGS]): "allow" | "ask" | "deny" {
