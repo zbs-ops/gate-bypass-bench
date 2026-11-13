@@ -287,6 +287,7 @@ const probeRows = ASSIGNMENT_PROBES.map((c) => `| \`${c}\` | ${envVerdicts[c]} |
 
 // Extended set: the command written into package.json or a Makefile, then npm test, npm install or
 // make, with one more gate: the allow config with printf, npm and make added.
+const environmentTables = envGates.flatMap((g) => table(g, environment));
 for (const g of envGates) g.prompted.length = 0;
 const allowManifests = codexGate(
   'allow-manifests',
@@ -376,7 +377,7 @@ writeFileSync(
     environmentCard,
     '```',
     '',
-    ...envGates.flatMap((g) => table(g, environment)),
+    ...environmentTables,
     '## Why the git/node/perl config holds',
     '',
     'Harmless commands that also start with a setting, judged under the same config:',
