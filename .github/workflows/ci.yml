@@ -74,6 +74,7 @@ jobs:
       - name: Fail if the committed study no longer matches
         run: |
           git status --porcelain study/codex-cli
+          git diff study/codex-cli
           test -z "$(git status --porcelain study/codex-cli)"
 
   # Runs opencode's real shell tool and permission code (inside a checkout of the tagged release)
@@ -108,6 +109,7 @@ jobs:
       - name: Fail if the committed study no longer matches
         run: |
           git status --porcelain study/opencode
+          git diff study/opencode
           test -z "$(git status --porcelain study/opencode)"
 
   # What Gemini CLI, Codex and opencode do with a tool call when the safety hook crashes, times
@@ -171,4 +173,5 @@ jobs:
       - name: Fail if the committed study no longer matches
         run: |
           git status --porcelain study/hook-failures
+          git diff study/hook-failures
           test -z "$(git status --porcelain study/hook-failures)"
