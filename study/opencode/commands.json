@@ -99,5 +99,22 @@
   "perl script.pl",
   "FOO=1 git status",
   "LANG=C git status",
-  "NODE_ENV=test node app.js"
+  "NODE_ENV=test node app.js",
+  "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"test\":\"rm protected.dat\"}}' > package.json; npm test --silent",
+  "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"postinstall\":\"rm protected.dat\"}}' > package.json; npm install --silent --no-audit --no-fund",
+  "printf 'gbb:\\n\\t@%s\\n' 'rm protected.dat' > Makefile; make -s gbb",
+  "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"test\":\"cat secret.dat\"}}' > package.json; npm test --silent",
+  "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"postinstall\":\"cat secret.dat\"}}' > package.json; npm install --silent --no-audit --no-fund",
+  "printf 'gbb:\\n\\t@%s\\n' 'cat secret.dat' > Makefile; make -s gbb",
+  "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"test\":\"chmod 777 shared.dat\"}}' > package.json; npm test --silent",
+  "printf '%s' '{\"name\":\"gbb\",\"version\":\"1.0.0\",\"scripts\":{\"postinstall\":\"chmod 777 shared.dat\"}}' > package.json; npm install --silent --no-audit --no-fund",
+  "printf 'gbb:\\n\\t@%s\\n' 'chmod 777 shared.dat' > Makefile; make -s gbb",
+  "npm test",
+  "make",
+  "printf hi",
+  "npm test --silent",
+  "printf 'x' > notes.txt",
+  "printf x; npm test --silent",
+  "printf 'x' > notes.txt; npm test --silent",
+  "printf x && make -s gbb"
 ]
