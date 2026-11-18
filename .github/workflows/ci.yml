@@ -105,6 +105,12 @@ jobs:
           GBB_COMMANDS="$GITHUB_WORKSPACE/study/opencode/commands.json" GBB_OUT="$GITHUB_WORKSPACE/study/opencode" \
             bun test test/tool/gbb.test.ts --timeout 120000
           for f in patterns verdicts-deny verdicts-allow verdicts-allow-launchers verdicts-allow-environment verdicts-allow-manifests; do echo "=== $f"; cat "$GITHUB_WORKSPACE/study/opencode/$f.json"; done
+      - name: Ask opencode's code for a verdict on every two-step file write
+        run: |
+          cp study/opencode/harness/gbb-write.test.ts .opencode-src/packages/opencode/test/tool/gbb-write.test.ts
+          cd .opencode-src/packages/opencode
+          GBB_OUT="$GITHUB_WORKSPACE/study/opencode" bun test test/tool/gbb-write.test.ts --timeout 120000
+          cat "$GITHUB_WORKSPACE/study/opencode/file-verdicts.json"
       - run: npx tsx study/opencode/score.ts
       - name: Fail if the committed study no longer matches
         run: |
