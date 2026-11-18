@@ -985,6 +985,76 @@
       }
     }
   ],
+  "make -C sub gbb": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "make -C sub gbb"
+      ],
+      "always": [
+        "make -C *"
+      ],
+      "metadata": {
+        "command": "make -C sub gbb"
+      }
+    }
+  ],
+  "make -f Makefile.ci gbb": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "make -f Makefile.ci gbb"
+      ],
+      "always": [
+        "make -f *"
+      ],
+      "metadata": {
+        "command": "make -f Makefile.ci gbb"
+      }
+    }
+  ],
+  "make -f build.txt gbb": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "make -f build.txt gbb"
+      ],
+      "always": [
+        "make -f *"
+      ],
+      "metadata": {
+        "command": "make -f build.txt gbb"
+      }
+    }
+  ],
+  "make -f mk/steps gbb": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "make -f mk/steps gbb"
+      ],
+      "always": [
+        "make -f *"
+      ],
+      "metadata": {
+        "command": "make -f mk/steps gbb"
+      }
+    }
+  ],
+  "make -f recipes.inc gbb": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "make -f recipes.inc gbb"
+      ],
+      "always": [
+        "make -f *"
+      ],
+      "metadata": {
+        "command": "make -f recipes.inc gbb"
+      }
+    }
+  ],
   "nice cat secret.dat": [
     {
       "permission": "bash",
@@ -1038,6 +1108,20 @@
       ],
       "metadata": {
         "command": "node app.js"
+      }
+    }
+  ],
+  "npm --prefix sub test": [
+    {
+      "permission": "bash",
+      "patterns": [
+        "npm --prefix sub test"
+      ],
+      "always": [
+        "npm --prefix *"
+      ],
+      "metadata": {
+        "command": "npm --prefix sub test"
       }
     }
   ],

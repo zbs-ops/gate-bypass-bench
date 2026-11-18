@@ -116,5 +116,11 @@
   "printf 'x' > notes.txt",
   "printf x; npm test --silent",
   "printf 'x' > notes.txt; npm test --silent",
-  "printf x && make -s gbb"
+  "printf x && make -s gbb",
+  "make -f build.txt gbb",
+  "make -f Makefile.ci gbb",
+  "make -f recipes.inc gbb",
+  "make -f mk/steps gbb",
+  "make -C sub gbb",
+  "npm --prefix sub test"
 ]
