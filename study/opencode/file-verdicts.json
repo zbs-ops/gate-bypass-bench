@@ -1,0 +1,79 @@
+{
+  "package.json": {
+    "patterns": [
+      "edit:package.json"
+    ],
+    "default": "allow",
+    "protect-build-files": "ask"
+  },
+  "Makefile": {
+    "patterns": [
+      "edit:Makefile"
+    ],
+    "default": "allow",
+    "protect-build-files": "ask"
+  },
+  "GNUmakefile": {
+    "patterns": [
+      "edit:GNUmakefile"
+    ],
+    "default": "allow",
+    "protect-build-files": "ask"
+  },
+  "rules.mk": {
+    "patterns": [
+      "edit:rules.mk"
+    ],
+    "default": "allow",
+    "protect-build-files": "ask"
+  },
+  "build.txt": {
+    "patterns": [
+      "edit:build.txt"
+    ],
+    "default": "allow",
+    "protect-build-files": "allow"
+  },
+  "Makefile.ci": {
+    "patterns": [
+      "edit:Makefile.ci"
+    ],
+    "default": "allow",
+    "protect-build-files": "allow"
+  },
+  "recipes.inc": {
+    "patterns": [
+      "edit:recipes.inc"
+    ],
+    "default": "allow",
+    "protect-build-files": "allow"
+  },
+  "mk/steps": {
+    "patterns": [
+      "edit:mk/steps"
+    ],
+    "default": "allow",
+    "protect-build-files": "allow"
+  },
+  "sub/package.json": {
+    "patterns": [
+      "edit:sub/package.json"
+    ],
+    "default": "allow",
+    "protect-build-files": "allow"
+  },
+  "sub/Makefile": {
+    "patterns": [
+      "edit:sub/Makefile"
+    ],
+    "default": "allow",
+    "protect-build-files": "allow"
+  },
+  "mk/rules.mk": {
+    "patterns": [
+      "edit:mk/rules.mk"
+    ],
+    "default": "allow",
+    "protect-build-files": "ask"
+  }
+}
