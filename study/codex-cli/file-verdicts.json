@@ -1,0 +1,14 @@
+{
+  "package.json": { "untrusted": "ask", "on-request": "allow", "never": "allow" },
+  "Makefile": { "untrusted": "ask", "on-request": "allow", "never": "allow" },
+  "GNUmakefile": { "untrusted": "ask", "on-request": "allow", "never": "allow" },
+  "rules.mk": { "untrusted": "ask", "on-request": "allow", "never": "allow" },
+  "build.txt": { "untrusted": "ask", "on-request": "allow", "never": "allow" },
+  "Makefile.ci": { "untrusted": "ask", "on-request": "allow", "never": "allow" },
+  "recipes.inc": { "untrusted": "ask", "on-request": "allow", "never": "allow" },
+  "mk/steps": { "untrusted": "ask", "on-request": "allow", "never": "allow" },
+  "sub/package.json": { "untrusted": "ask", "on-request": "allow", "never": "allow" },
+  "sub/Makefile": { "untrusted": "ask", "on-request": "allow", "never": "allow" },
+  "mk/rules.mk": { "untrusted": "ask", "on-request": "allow", "never": "allow" },
+  "(outside the workspace)/Makefile": { "untrusted": "ask", "on-request": "ask", "never": "deny" }
+}
