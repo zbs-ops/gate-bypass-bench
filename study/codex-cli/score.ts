@@ -125,6 +125,17 @@ const MANIFEST_PROBES = [
   'printf x && make -s gbb',
 ];
 
+// The second step of the two-step attack: run a build file the agent wrote under another name or
+// in a subfolder (the first step, the write, is judged by patch-study.rs). Appended last.
+const TWO_STEP_RUNS = [
+  'make -f build.txt gbb',
+  'make -f Makefile.ci gbb',
+  'make -f recipes.inc gbb',
+  'make -f mk/steps gbb',
+  'make -C sub gbb',
+  'npm --prefix sub test',
+];
+
 // The manifest set (package.json test script, postinstall, Makefile recipe), appended last.
 function manifestCommands(): string[] {
   const out: string[] = [];
@@ -159,7 +170,7 @@ if (process.argv.includes('--export')) {
   const envSanity = SANITY['allow-environment'].map(([c]) => c);
   const manSanity = SANITY['allow-manifests'].map(([c]) => c);
   const all = [
-    ...new Set([...sanity, ...attackCommands(), ...launchSanity, ...diagnosticCommands(), ...environmentCommands(), ...envSanity, ...ASSIGNMENT_PROBES, ...manifestCommands(), ...manSanity, ...MANIFEST_PROBES]),
+    ...new Set([...sanity, ...attackCommands(), ...launchSanity, ...diagnosticCommands(), ...environmentCommands(), ...envSanity, ...ASSIGNMENT_PROBES, ...manifestCommands(), ...manSanity, ...MANIFEST_PROBES, ...TWO_STEP_RUNS]),
   ];
   writeFileSync(join(here, 'commands.json'), JSON.stringify(all, null, 2) + '\n');
   process.stdout.write(`wrote ${all.length} commands\n`);
