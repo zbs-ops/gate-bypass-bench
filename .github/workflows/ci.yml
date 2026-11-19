@@ -118,6 +118,32 @@ jobs:
           git diff study/opencode
           test -z "$(git status --porcelain study/opencode)"
 
+  # What Codex does when the agent writes each file of the two-step manifest attack with
+  # apply_patch: its own assess_patch_safety at the pinned release, per approval policy.
+  codex-file-study:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: openai/codex
+          ref: rust-v0.163.0
+          path: .codex-src
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: .codex-src/codex-rs
+      - name: Codex's patch safety check on each two-step file
+        run: |
+          cat study/codex-cli/patch-study.rs >> .codex-src/codex-rs/core/src/safety_tests.rs
+          cd .codex-src/codex-rs
+          GBB_PATCH_OUT="$GITHUB_WORKSPACE/study/codex-cli/file-verdicts.json" \
+            cargo test -p codex-core --lib gbb_patch_study -- --nocapture
+      - name: Fail if the committed verdicts no longer match
+        run: |
+          git status --porcelain study/codex-cli
+          git diff study/codex-cli
+          test -z "$(git status --porcelain study/codex-cli)"
+
   # What Gemini CLI, Codex and opencode do with a tool call when the safety hook crashes, times
   # out, or answers in a way they don't support. Each agent's own code decides, at a pinned version.
   hook-failure-study:
