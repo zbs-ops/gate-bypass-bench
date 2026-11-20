@@ -330,6 +330,24 @@ const twoStepRows = Object.entries(fileVerdicts).map(([file, v]) => {
   return `| \`${file}\` | ${v['untrusted']} | ${v['on-request']} | ${v['never']} | ${runCell} |`;
 });
 
+// The run step under on-request with the default workspace sandbox (harness mode "on-request"):
+// "allow-sandboxed" runs in the sandbox without a prompt, "allow" (every piece rule-allowed) outside it.
+const onRequestAllow: Record<string, string> = JSON.parse(readFileSync(join(here, 'verdicts-on-request-allow.json'), 'utf8'));
+const onRequestMan: Record<string, string> = JSON.parse(
+  readFileSync(join(here, 'verdicts-on-request-allow-manifests.json'), 'utf8'),
+);
+const tally = (v: Record<string, string>) => {
+  const counts: Record<string, number> = {};
+  for (const x of Object.values(v)) counts[x] = (counts[x] ?? 0) + 1;
+  return ['allow', 'allow-sandboxed', 'prompt', 'forbidden'].map((k) => `${counts[k] ?? 0} ${k}`).join(', ');
+};
+const onRequestRows = Object.entries(fileVerdicts)
+  .filter(([file]) => RUN_FOR[file])
+  .map(([file, v]) => {
+    const run = RUN_FOR[file];
+    return `| \`${file}\` | ${v['on-request']} | \`${run}\` | ${onRequestAllow[run]} | ${onRequestMan[run]} |`;
+  });
+
 writeFileSync(
   join(here, 'RESULTS.md'),
   [
@@ -443,11 +461,26 @@ writeFileSync(
     'policy, under each approval policy. Codex judges a write by where it lands, not by its name. Step 2',
     'is the verdict on the command that runs the file, under the plain allow rules and under the',
     'printf/npm/make rules, as the sections above judge commands (approval "unless-trusted"). Under',
-    'that policy the write itself already asks; the command column was not measured under on-request.',
+    'that policy the write itself already asks; the run step under on-request is in the next section.',
     '',
     '| file | write: untrusted | write: on-request | write: never | run (allow / allow + printf/npm/make) |',
     '|---|---|---|---|---|',
     ...twoStepRows,
+    '',
+    '## The run step under on-request (the default workspace sandbox)',
+    '',
+    'On-request with the workspace-write sandbox is the setup where both steps can go unattended,',
+    "since the write above is allowed there. The harness models it from core's",
+    "`render_decision_for_unmatched_command_for_platform`: a command no rule names, and that Codex's",
+    "dangerous-command check doesn't flag (it flags a forced `rm` and `sudo`), runs in the sandbox",
+    'without a prompt (`allow-sandboxed`); a command every piece of which an allow rule names runs',
+    'without a prompt outside the sandbox (`allow`, `bypass_sandbox`). Over all',
+    `${Object.keys(onRequestAllow).length} benchmark commands: ${tally(onRequestAllow)} with the plain allow rules;`,
+    `${tally(onRequestMan)} with the printf/npm/make rules.`,
+    '',
+    '| file | write: on-request | command | run: allow rules | run: allow + printf/npm/make |',
+    '|---|---|---|---|---|',
+    ...onRequestRows,
     '',
   ].join('\n'),
 );

@@ -771,7 +771,7 @@ codex-core's safety tests in CI), with the workspace-write profile and a workspa
 policy, under each approval policy. Codex judges a write by where it lands, not by its name. Step 2
 is the verdict on the command that runs the file, under the plain allow rules and under the
 printf/npm/make rules, as the sections above judge commands (approval "unless-trusted"). Under
-that policy the write itself already asks; the command column was not measured under on-request.
+that policy the write itself already asks; the run step under on-request is in the next section.
 
 | file | write: untrusted | write: on-request | write: never | run (allow / allow + printf/npm/make) |
 |---|---|---|---|---|
@@ -787,3 +787,23 @@ that policy the write itself already asks; the command column was not measured u
 | `sub/Makefile` | ask | allow | allow | `make -C sub gbb`: prompt / allow |
 | `mk/rules.mk` | ask | allow | allow | - |
 | `(outside the workspace)/Makefile` | ask | ask | deny | - |
+
+## The run step under on-request (the default workspace sandbox)
+
+On-request with the workspace-write sandbox is the setup where both steps can go unattended,
+since the write above is allowed there. The harness models it from core's
+`render_decision_for_unmatched_command_for_platform`: a command no rule names, and that Codex's
+dangerous-command check doesn't flag (it flags a forced `rm` and `sudo`), runs in the sandbox
+without a prompt (`allow-sandboxed`); a command every piece of which an allow rule names runs
+without a prompt outside the sandbox (`allow`, `bypass_sandbox`). Over all
+133 benchmark commands: 2 allow, 131 allow-sandboxed, 0 prompt, 0 forbidden with the plain allow rules;
+14 allow, 119 allow-sandboxed, 0 prompt, 0 forbidden with the printf/npm/make rules.
+
+| file | write: on-request | command | run: allow rules | run: allow + printf/npm/make |
+|---|---|---|---|---|
+| `build.txt` | allow | `make -f build.txt gbb` | allow-sandboxed | allow |
+| `Makefile.ci` | allow | `make -f Makefile.ci gbb` | allow-sandboxed | allow |
+| `recipes.inc` | allow | `make -f recipes.inc gbb` | allow-sandboxed | allow |
+| `mk/steps` | allow | `make -f mk/steps gbb` | allow-sandboxed | allow |
+| `sub/package.json` | allow | `npm --prefix sub test` | allow-sandboxed | allow |
+| `sub/Makefile` | allow | `make -C sub gbb` | allow-sandboxed | allow |
