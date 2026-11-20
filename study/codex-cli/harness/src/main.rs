@@ -8,14 +8,19 @@
 //! 2. match every piece against the user's rules with `resolve_host_executables: true`, so
 //!    `/bin/rm` is matched as `rm`;
 //! 3. for a piece no rule matches, use core's fallback: the built-in dangerous-command check, then
-//!    the approval policy (an unrestricted filesystem, i.e. no OS sandbox).
+//!    the approval policy (an unrestricted filesystem, i.e. no OS sandbox), except for
+//!    `on-request`, which models the default workspace-write sandbox: an unmatched command that
+//!    isn't dangerous runs in the sandbox without a prompt (`FileSystemSandboxKind::Restricted`,
+//!    no sandbox override requested).
 //!
-//! Usage: gbb-harness <rules-file> <never|unless-trusted> <commands.json>
-//! Prints a JSON object: command -> "allow" | "prompt" | "forbidden".
+//! Usage: gbb-harness <rules-file> <never|unless-trusted|on-request> <commands.json>
+//! Prints a JSON object: command -> "allow" | "prompt" | "forbidden". Under `on-request` an allowed
+//! command is "allow" when every piece is allowed by a rule, which also lifts the sandbox
+//! (`bypass_sandbox` in `ExecApprovalRequirement::Skip`), and "allow-sandboxed" otherwise.
 
 use std::collections::BTreeMap;
 
-use codex_execpolicy::{Decision, MatchOptions, PolicyParser};
+use codex_execpolicy::{Decision, MatchOptions, PolicyParser, RuleMatch};
 use codex_shell_command::bash::parse_shell_lc_plain_commands;
 use codex_shell_command::is_dangerous_command::{
     DangerousCommandPlatform, dangerous_command_match_for_platform,
@@ -25,17 +30,19 @@ use codex_shell_command::is_dangerous_command::{
 enum Approval {
     Never,
     UnlessTrusted,
+    OnRequest,
 }
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let [_, rules_path, approval, commands_path] = args.as_slice() else {
-        eprintln!("usage: gbb-harness <rules-file> <never|unless-trusted> <commands.json>");
+        eprintln!("usage: gbb-harness <rules-file> <never|unless-trusted|on-request> <commands.json>");
         std::process::exit(2);
     };
     let approval = match approval.as_str() {
         "never" => Approval::Never,
         "unless-trusted" => Approval::UnlessTrusted,
+        "on-request" => Approval::OnRequest,
         other => panic!("unknown approval policy {other}"),
     };
 
@@ -48,13 +55,14 @@ fn main() {
         serde_json::from_str(&std::fs::read_to_string(commands_path).expect("read commands"))
             .expect("commands.json is a list of strings");
 
-    // render_decision_for_unmatched_command_for_platform, unrestricted filesystem.
+    // render_decision_for_unmatched_command_for_platform: an unrestricted filesystem, or for
+    // on-request the restricted workspace-write sandbox.
     let fallback = |cmd: &[String]| -> Decision {
         let dangerous = dangerous_command_match_for_platform(cmd, DangerousCommandPlatform::Posix);
         match (dangerous.is_some(), approval) {
             (true, Approval::Never) => Decision::Forbidden,
-            (true, Approval::UnlessTrusted) => Decision::Prompt,
-            (false, Approval::Never) => Decision::Allow,
+            (true, Approval::UnlessTrusted | Approval::OnRequest) => Decision::Prompt,
+            (false, Approval::Never | Approval::OnRequest) => Decision::Allow,
             (false, Approval::UnlessTrusted) => Decision::Prompt,
         }
     };
@@ -69,7 +77,15 @@ fn main() {
             .filter(|c| !c.is_empty())
             .unwrap_or_else(|| vec![argv.clone()]);
         let evaluation = policy.check_multiple_with_options(pieces.iter(), &fallback, &options);
+        // Skip { bypass_sandbox }: true only when every piece is explicitly allowed by a rule.
+        let by_rules = pieces.iter().all(|piece| {
+            policy
+                .matches_for_command_with_options(piece, None, &options)
+                .iter()
+                .any(|m| matches!(m, RuleMatch::PrefixRuleMatch { .. }) && m.decision() == Decision::Allow)
+        });
         let verdict = match evaluation.decision {
+            Decision::Allow if approval == Approval::OnRequest && !by_rules => "allow-sandboxed",
             Decision::Allow => "allow",
             // With approval "never", a prompt is rejected outright (prompt_is_rejected_by_policy).
             Decision::Prompt if approval == Approval::Never => "forbidden",
