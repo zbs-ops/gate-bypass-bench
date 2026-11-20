@@ -793,7 +793,8 @@ that policy the write itself already asks; the run step under on-request is in t
 On-request with the workspace-write sandbox is the setup where both steps can go unattended,
 since the write above is allowed there. The harness models it from core's
 `render_decision_for_unmatched_command_for_platform`: a command no rule names, and that Codex's
-dangerous-command check doesn't flag (it flags a forced `rm` and `sudo`), runs in the sandbox
+dangerous-command check doesn't flag (on Linux only a forced `rm`, also inside sudo, env, trap or a
+script, and wrappers nested past 8 levels), runs in the sandbox
 without a prompt (`allow-sandboxed`); a command every piece of which an allow rule names runs
 without a prompt outside the sandbox (`allow`, `bypass_sandbox`). Over all
 133 benchmark commands: 2 allow, 131 allow-sandboxed, 0 prompt, 0 forbidden with the plain allow rules;
