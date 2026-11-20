@@ -69,7 +69,11 @@ jobs:
           $H study/codex-cli/allow-launchers.rules unless-trusted study/codex-cli/commands.json > study/codex-cli/verdicts-allow-launchers.json
           $H study/codex-cli/allow-environment.rules unless-trusted study/codex-cli/commands.json > study/codex-cli/verdicts-allow-environment.json
           $H study/codex-cli/allow-manifests.rules unless-trusted study/codex-cli/commands.json > study/codex-cli/verdicts-allow-manifests.json
+          $H study/codex-cli/allow.rules on-request study/codex-cli/commands.json > study/codex-cli/verdicts-on-request-allow.json
+          $H study/codex-cli/allow-manifests.rules on-request study/codex-cli/commands.json > study/codex-cli/verdicts-on-request-allow-manifests.json
           cat study/codex-cli/verdicts-deny.json study/codex-cli/verdicts-allow.json study/codex-cli/verdicts-allow-launchers.json study/codex-cli/verdicts-allow-environment.json study/codex-cli/verdicts-allow-manifests.json
+          echo ON-REQUEST-ALLOW; cat study/codex-cli/verdicts-on-request-allow.json
+          echo ON-REQUEST-ALLOW-MANIFESTS; cat study/codex-cli/verdicts-on-request-allow-manifests.json
       - run: npx tsx study/codex-cli/score.ts
       - name: Fail if the committed study no longer matches
         run: |
